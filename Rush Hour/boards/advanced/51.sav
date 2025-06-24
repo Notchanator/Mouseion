@@ -1,0 +1,10 @@
+RedCar 3 3
+ThreeCarHor ThreeCar1_1 1 1 true
+ThreeCarHor ThreeCar6_1 1 6 true
+ThreeCarVert ThreeCar5_2 5 2 false
+TwoCarHor TwoCar1_4 1 4 true
+TwoCarHor TwoCar4_5 4 5 true
+TwoCarVert TwoCar4_1 4 1 false
+TwoCarVert TwoCar2_2 2 2 false
+TwoCarVert TwoCar6_5 6 5 false
+TwoCarVert TwoCar3_4 3 4 false
