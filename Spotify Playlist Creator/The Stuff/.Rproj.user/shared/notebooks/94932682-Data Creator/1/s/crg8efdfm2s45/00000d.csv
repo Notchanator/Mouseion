@@ -1,0 +1,3 @@
+"0","ggplot(miniCatalog) +"
+"0","  geom_histogram(aes(x=Popularity),stat=""count"")"
+"2","Ignoring unknown parameters: binwidth, bins, pad"

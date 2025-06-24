@@ -1,0 +1,2 @@
+"0","#test <- test %>% select(id,Popularity = popularity)"
+"0","merge(miniCatalog,subset,by.x=""Id"",by.y=""id"",all=T)"

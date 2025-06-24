@@ -1,0 +1,157 @@
+---
+title: "R Notebook for Calculating and Creating Playlists"
+output: html_notebook
+---
+
+CRAN: https://www.rdocumentation.org/packages/spotifyr/versions/2.1.1 
+
+    
+Get the code to work for another user... might need to just brute access the API
+
+
+Currently using Mahalanoobis Distance is correct because it accounts for the correlation between attributes. But it puts way to much weight on the artist_categorical variable
+  - Maybe if combining the artist-categorical variable and genre variable will be the move?
+
+- Add more songs to the dataset... like Zhu (maybe remove songs too?)
+- Can also use the spotify API to get artists Genre
+  - This could be the next/last step.
+  - Find a way to quantify the genres into weights
+    - Maybe if it is the same genre no weight if not add weight
+    - Create a Forest where each Tree connects certain genres that are similar... depending on what the genres are.
+
+
+There will be many songs that have both explicit and non-explicit versions in the dataset. Need to specify in function call if explicit or not. Thinking should be automatically explicit versions unless otherwise specified.
+
+```{r Libraries}
+library(tidyverse)
+# library(hopach)
+library(spotifyr)
+library(jsonlite)
+library(hash)
+```
+
+```{r Spotify Setup}
+userID = "224v42kw5rwjkbtwmd6yno62y" #Nathan
+#userID = "jabers01" #Garrett
+
+Sys.setenv(SPOTIFY_CLIENT_ID = '2f6c4f9bf7be481fb544889db0766281')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '7e971c9b347744c6bbc024b667de1dbb')
+
+access_token <- get_spotify_access_token()
+```
+
+
+```{r Data Loading}
+data <- read_tsv("dataCleaned.tsv") 
+```
+
+```{r Dictionary Loading}
+json <- fromJSON("dict_artists_cleaned.json")
+```
+
+
+```{r Usefull Functions}
+songExist <- function(string, artist){
+    if (string %in% data$name){
+        if (!is.null(artist)){
+            songs <- data[data$name == string,]
+            if (artist %in% songs$artists){
+                return(TRUE)
+            }
+            print("Song doesn't exist with Artist(s)")
+            return(FALSE)
+        }
+        return(TRUE)
+    }
+    print("Song doesn't exist")
+    return(FALSE)
+}
+
+sameArtists <- function(artists){
+    for (val in 1:(nrow(artists))){
+        if (artists[val,]  %in% unname(unlist(artists[-val,]))){
+            return(TRUE)
+        }
+    }
+    return(FALSE)
+}
+
+addArtistWeight <- function(artists){
+  song_artists <- str_split(artists, ", ")[[1]]
+  data %>% 
+    mutate(
+      artist_cat = case_when(sapply(str_split(artists, ", "), function(x) x[[1]]) %in%                                        song_artists ~ 0,
+                             TRUE ~ 1),
+    ) %>% 
+    return()
+}
+```
+
+```{r}
+descriptionBasic1 <- "Auto Generated Playlist that finds songs with closest euclidean distance to an input song '"
+descriptionBasic2 <- "' based on 13 values provided from Spotify."
+
+spotifyPlaylist <- function(string,  num = 20, artist = NULL){
+    if (num > 100) {num = 100}
+    if (num < 1) {num  = 1}
+    if (!songExist(string, artist)) {return(FALSE)}
+    inputSongData <- data[data$name == string,]
+    inputSongData <- inputSongData[rowSums(is.na(inputSongData)) == 0,]
+    if (!is.null(artist))
+        inputSongData <- inputSongData[inputSongData$artists == artist,]
+    if (nrow(inputSongData) > 1) {
+        if (sameArtists(inputSongData["artists"]))
+            inputSongData = inputSongData[1,]
+        else {
+            print("Multiple Artists please specify one of the following:")
+            print(inputSongData$artists)
+            return(FALSE)
+        }
+    }
+    inputSongData["artist_cat"] <- 0
+    datas <- addArtistWeight(inputSongData["artists"])
+    song_artists <- str_split(inputSongData["artists"], ", ")[[1]]
+    #distanceVec <- distancevector(as.matrix(datas[,seq(4,17)]),
+               #          as.matrix(inputSongData[,seq(4,17)]), "euclid")
+    distanceVec <- mahalanobis(datas[5:18], as.matrix(inputSongData[5:18]), cov(datas[5:18]))
+    songDatas <- datas[,c(1,2,3)] %>% 
+        mutate(distance = distanceVec) %>% 
+        filter(name != inputSongData["name"]) %>% 
+        mutate(
+           distance = case_when(sapply(str_split(artists, ", "), function(x) x[[1]]) %in%                                        song_artists ~ distance,
+                                  TRUE ~ distance + 2),
+        ) %>% 
+        arrange(distance) %>% 
+        slice(1:num) %>% 
+        distinct(name, artists, .keep_all=T)
+    playlistName <- paste0("A.G.P. (", string, ")")
+    playlistDesc <- paste0(descriptionBasic1, string, descriptionBasic2)
+    playlist <- create_playlist(userID, playlistName, description = playlistDesc,
+                authorization = get_spotify_authorization_code(scope = "playlist-modify-public"))
+    add_tracks_to_playlist(playlist$id, paste0("spotify:track:",songDatas$id), 
+                authorization = get_spotify_authorization_code(scope = "playlist-modify-public"))
+    return(songDatas)
+}
+```
+
+
+```{r row by row}
+#Max 100 songs
+vals <- spotifyPlaylist("Same Bitches (feat. G-Eazy & YG)", 50)
+vals
+```
+
+```{r}
+sameArtists <- function(artists){
+    for (val in 1:(length(artists))){
+        if (artists[val]  %in% artists[-val]){
+            return(TRUE)
+        }
+    }
+    return(FALSE)
+}
+
+sameArtists(vals1$artists)
+```
+
+

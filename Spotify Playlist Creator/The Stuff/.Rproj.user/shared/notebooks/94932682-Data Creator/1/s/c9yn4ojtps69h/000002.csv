@@ -1,0 +1,7 @@
+"0","artistNames <- function(x){"
+"0","  x$artists$name"
+"0","}"
+"0",""
+"0","artistIds <- function(x){"
+"0","  x$artists$id"
+"0","}"

@@ -1,0 +1,45 @@
+---
+title: "R Notebook for Data Cleaning / Making"
+output: html_notebook
+---
+
+Goal of this it to clean the data and then save it
+  Or to add / delete songs
+  Or Add data values to the data
+
+```{r Libraries}
+library(tidyverse)
+library(jsonlite)
+library(rbenchmark)
+```
+
+```{r DataSet Cleaning}
+data <- read_csv("tracks.csv") %>% 
+    select(1,2,3,5,6,7,9,10,11,12,13,14,15,16,17,18,19,20) %>% 
+    mutate(
+        artists = str_replace_all(artists, "^\\[|\\]$", ""), #Gets rid of [] 
+        artists = str_replace_all(artists, "^'|'$|'(?=,\\s)|(?<=,\\s)'", ""), #Gets rid of  '
+        artists = str_replace_all(artists, '^"|"$|"(?=,\\s)|(?<=,\\s)"', "")  #Gets rid of  "
+    ) %>% 
+      mutate(
+        id_artists = str_replace_all(id_artists, "^\\[|\\]$", ""), 
+        id_artists = str_replace_all(id_artists, "^'|'$|'(?=,\\s)|(?<=,\\s)'", ""),
+        id_artists = str_replace_all(id_artists, '^"|"$|"(?=,\\s)|(?<=,\\s)"', "")
+    )
+data <- data[, c(1,2,5,6,3,4,7,8,9,10,11,12,13,14,15,16,17,18)]
+
+write_tsv(data, "dataCleaned.tsv")
+```
+
+```{r HashTable Cleaning}
+json <- fromJSON("dict_artists.json")
+null_rows <- c()
+for (indx in 1:length(json)){
+  if (length(json[[indx]]) == 0)
+    null_rows <- c(null_rows, indx)
+}
+cleaned_json <- toJSON(json[-null_rows])
+write_json(cleaned_json, "dict_artists_cleaned.json")
+```
+
+

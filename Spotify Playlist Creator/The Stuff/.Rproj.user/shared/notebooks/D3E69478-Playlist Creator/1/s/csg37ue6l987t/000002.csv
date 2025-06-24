@@ -1,0 +1,25 @@
+"0","data <- read_tsv(""dataCleaned.tsv"") "
+"2","
+[36m──[39m [1m[1mColumn specification[1m[22m [36m────────────────────────────────────────────────────────────────────[39m
+cols(
+  id = [31mcol_character()[39m,
+  name = [31mcol_character()[39m,
+  artists = [31mcol_character()[39m,
+  id_artists = [31mcol_character()[39m,
+  popularity = [32mcol_double()[39m,
+  explicit = [32mcol_double()[39m,
+  danceability = [32mcol_double()[39m,
+  energy = [32mcol_double()[39m,
+  key = [32mcol_double()[39m,
+  loudness = [32mcol_double()[39m,
+  mode = [32mcol_double()[39m,
+  speechiness = [32mcol_double()[39m,
+  acousticness = [32mcol_double()[39m,
+  instrumentalness = [32mcol_double()[39m,
+  liveness = [32mcol_double()[39m,
+  valence = [32mcol_double()[39m,
+  tempo = [32mcol_double()[39m,
+  time_signature = [32mcol_double()[39m
+)
+
+"

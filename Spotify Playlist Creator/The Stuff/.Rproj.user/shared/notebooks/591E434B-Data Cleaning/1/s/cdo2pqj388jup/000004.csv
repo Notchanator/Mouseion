@@ -1,0 +1,7 @@
+"0","json <- fromJSON(""dict_artists.json"")"
+"0","null_rows <- c()"
+"0","for (indx in 1:length(json)){"
+"0","  if (length(json[[indx]]) == 0)"
+"0","    null_rows <- c(null_rows, indx)"
+"0","}"
+"0","cleaned_json <- toJSON(json[-null_rows])"

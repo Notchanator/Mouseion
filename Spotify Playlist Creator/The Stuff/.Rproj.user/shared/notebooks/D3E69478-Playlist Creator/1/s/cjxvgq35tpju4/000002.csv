@@ -1,0 +1,7 @@
+"0","userID = ""224v42kw5rwjkbtwmd6yno62y"" #Nathan"
+"0","#userID = ""jabers01"" #Garrett"
+"0",""
+"0","Sys.setenv(SPOTIFY_CLIENT_ID = '2f6c4f9bf7be481fb544889db0766281')"
+"0","Sys.setenv(SPOTIFY_CLIENT_SECRET = '7e971c9b347744c6bbc024b667de1dbb')"
+"0",""
+"0","access_token <- get_spotify_access_token()"
