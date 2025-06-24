@@ -1,0 +1,16 @@
+WhitePawn images/pieces/white/Pawn.png
+WhiteRook images/pieces/white/Rook.png
+WhiteKnight images/pieces/white/Knight.png
+WhiteBishop images/pieces/white/Bishop.png
+WhiteKing images/pieces/white/King.png
+WhiteQueen images/pieces/white/Queen.png
+BlackPawn images/pieces/black/Pawn.png
+BlackRook images/pieces/black/Rook.png
+BlackKnight images/pieces/black/Knight.png
+BlackBishop images/pieces/black/Bishop.png
+BlackKing images/pieces/black/King.png
+BlackQueen images/pieces/black/Queen.png
+BlackMove images/BlackMove.png
+WhiteMove images/WhiteMove.png
+WhiteKing images/pieces/white/White_King_Checked.png
+BlackKing images/pieces/black/Black_King_Checked.png
