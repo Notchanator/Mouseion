@@ -1,0 +1,6 @@
+id,orientation,edge_0,edge_1,edge_2
+1,FALSE,,2,
+2,TRUE,1,,5
+3,FALSE,4,,
+4,TRUE,3,5,
+5,FALSE,,4,2
