@@ -40,6 +40,31 @@ def setPreviousPiece(pieces):
     pieces["DarkBlue1.csv"].previous_piece = pieces["Yellow2.csv"]
     return pieces
 
+def setPieceConfigs(pieces):
+    pieces["DarkGreen5.csv"].maxRotation = 6
+    pieces["DarkGreen5.csv"].canFlip = False
+    pieces["Lavender5.csv"].maxRotation = 6
+    pieces["Lavender5.csv"].canFlip =  True
+    pieces["LightGreen5.csv"].maxRotation = 6
+    pieces["LightGreen5.csv"].canFlip = True
+    pieces["Red5.csv"].maxRotation = 6
+    pieces["Red5.csv"].canFlip = False
+    pieces["Purple4.csv"].maxRotation = 2
+    pieces["Purple4.csv"].canFlip =  False
+    pieces["Orange4.csv"].maxRotation = 6
+    pieces["Orange4.csv"].canFlip = False
+    pieces["Pink4.csv"].maxRotation = 6
+    pieces["Pink4.csv"].canFlip =  False
+    pieces["Blue3_1.csv"].maxRotation = 3
+    pieces["Blue3_1.csv"].canFlip = True
+    pieces["Blue3_2.csv"].maxRotation = 3
+    pieces["Blue3_2.csv"].canFlip = True
+    pieces["Yellow2.csv"].maxRotation = 4
+    pieces["Yellow2.csv"].canFlip =  False
+    pieces["DarkBlue1.csv"].maxRotation = 2
+    pieces["DarkBlue1.csv"].canFlip = False
+    return pieces
+
 def reorderPieces(pieces):
     return [
         pieces["DarkGreen5.csv"], pieces["Lavender5.csv"], pieces["LightGreen5.csv"], 
