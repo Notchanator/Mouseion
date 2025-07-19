@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-import src.piece as piece
+from src.piece import *
+from src.util import *
 import os
 
 def rollDice(board):
@@ -36,5 +37,47 @@ def setupGame():
     for fileName in os.listdir(folderPath):
         filePath = os.path.join(folderPath, fileName)
         if os.path.isfile(filePath):
-            pieces[fileName] = piece.Piece(filePath)
+            pieces[fileName] = Piece(filePath)
     return board, pieces
+
+def solveBoard(board, pieces, indices, debug_piece = None):
+    # Solve Game (Non Function for Debugging)
+    # solvedBoard, pieces, solved = solvePuzzle(board, indices, pieces)
+    # previous_piece = None
+    while not isSolved(board):
+    # for _ in range(50):
+        # First Non-Placed Piece.
+        for piece in pieces:
+            if not piece.placed:
+                break
+        if piece.last_indx is None: starting_indx = 0
+        else: starting_indx = piece.last_indx
+        for indx in range(starting_indx + 1, indices.size):
+            board, placed = placeIfValid(board, indices[indx], piece)
+            if placed:
+                if piece.name == debug_piece:
+                    print(f"Placed {debug_piece} at {indices[indx]} w/ Roation:{piece.rotation} & Flipped:{piece.flipped}")
+                if isSolved(board):
+                    break
+                # If the board is unsolvable than don't place it.
+                elif isUnSolvable(board):
+                    board = removePiece(board, piece)
+                else:
+                    piece.placed = True
+                    piece.last_indx = indx
+                    break
+        if not placed:
+            if piece.rotation == piece.maxRotation and piece.canFlip == piece.flipped:
+                board = removePiece(board, piece.previous_piece)
+                piece.previous_piece.placed = False
+            if piece.rotation == piece.maxRotation:
+                piece.rotateForwards()
+                piece.rotation = 1
+                if piece.canFlip:
+                    piece.flipPiece()
+                piece.last_indx = 0
+            else:
+                piece.rotateForwards()
+                piece.rotation += 1
+                piece.last_indx = 0
+    return board

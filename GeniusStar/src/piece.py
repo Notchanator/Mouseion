@@ -72,3 +72,13 @@ def placeIfValid(board, vertex, piece):
 def removePiece(board, piece):
     board.loc[board['piece'] == piece.name, 'piece'] = None
     return board
+
+def createFakePiece(vertex, piece):
+    return pd.DataFrame({
+        'v1_x': piece.data['v1_x'] + vertex[0],
+        'v1_y': piece.data['v1_y'] + vertex[1],
+        'v2_x': piece.data['v2_x'] + vertex[0],
+        'v2_y': piece.data['v2_y'] + vertex[1],
+        'v3_x': piece.data['v3_x'] + vertex[0],
+        'v3_y': piece.data['v3_y'] + vertex[1]
+    })

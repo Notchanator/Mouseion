@@ -8,16 +8,6 @@ def roundHalf(value):
 def isSolved(board):
     return board["piece"].isna().sum() == 0
 
-def createFakePiece(vertex, piece):
-    return pd.DataFrame({
-        'v1_x': piece.data['v1_x'] + vertex[0],
-        'v1_y': piece.data['v1_y'] + vertex[1],
-        'v2_x': piece.data['v2_x'] + vertex[0],
-        'v2_y': piece.data['v2_y'] + vertex[1],
-        'v3_x': piece.data['v3_x'] + vertex[0],
-        'v3_y': piece.data['v3_y'] + vertex[1]
-    })
-
 def getBoardIndices(board):
     return pd.concat([
         board[['v1_x', 'v1_y']].apply(tuple, axis=1),
@@ -89,3 +79,51 @@ def plotBoard(board):
         )
         ax.annotate(board.loc[triangle, "piece"], (board.loc[triangle, "center_x"], board.loc[triangle, "center_y"]), size=6,  ha='center')
     plt.show()
+
+
+def isUnSolvable(board):
+    # Create df of empty triangles on the board.
+    empty_triangles = board[board['piece'].isnull()]
+    # Add Search Information.
+    empty_triangles.loc[:, 'searched'] = False
+    # Loop throgh each triangle.
+    triangle_forest = []
+    queue = []
+    triangle_tree = []
+    # Loop until everything is searched. Add an extra loop to plant the final tree in the forest.
+    while empty_triangles['searched'].sum() < (empty_triangles['searched'].count() + 1):
+    # for _ in range(10):
+        if len(queue) > 0:
+            # Pop the first item in the queue.
+            indx, queue = queue[0], queue[1:]
+            # Get the edges for the indx.
+            edges = empty_triangles.loc[int(indx)][['edge_0', 'edge_1', 'edge_2']]
+            # Simplify to edges that haven't been searched.
+            non_searched_edges = empty_triangles[(empty_triangles.index.isin(edges)) & (~empty_triangles['searched'])]
+            # Add each non-searched edge to the tree and queue.
+            triangle_tree = np.append(triangle_tree, non_searched_edges.index.tolist())
+            queue = np.append(queue, non_searched_edges.index.tolist())
+            # Mark each edge as searched.
+            empty_triangles.loc[empty_triangles.index.isin(non_searched_edges.index), 'searched'] = True
+        else:
+            if len(triangle_tree) > 0:
+                triangle_forest.append(triangle_tree)
+            # Get first unsearched vertex.
+            indx = empty_triangles[~empty_triangles['searched']].index.min()
+            if np.isnan(indx):
+                break
+            # Add triangle to the tree and queue.
+            triangle_tree = np.array([int(empty_triangles.loc[indx].name)])
+            queue = np.array([int(empty_triangles.loc[indx].name)])
+            # Mark the triangle as searched.
+            empty_triangles.loc[indx, 'searched'] = True
+    lengths = [len(tri) for tri in triangle_forest]
+    if len([tree for tree in lengths if tree == 1]) > 1:
+        return True
+    if len([tree for tree in lengths if tree == 2]) > 1:
+        return True
+    if len([tree for tree in lengths if tree == 3]) > 3:
+        return True
+    if len([tree for tree in lengths if tree == 4]) > 3:
+        return True
+    return False
