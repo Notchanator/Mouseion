@@ -2,9 +2,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def roundHalf(value):
-    return np.round(value * 2) / 2
-
 def isSolved(board):
     return board["piece"].isna().sum() == 0
 
@@ -77,7 +74,7 @@ def plotBoard(board):
             [board.loc[triangle, "v1_x"], board.loc[triangle, "v3_x"]],
             [board.loc[triangle, "v1_y"], board.loc[triangle, "v3_y"]]
         )
-        ax.annotate(board.loc[triangle, "piece"], (board.loc[triangle, "center_x"], board.loc[triangle, "center_y"]), size=6,  ha='center')
+        ax.annotate(board.loc[triangle, "id"], (board.loc[triangle, "center_x"], board.loc[triangle, "center_y"]), size=6,  ha='center')
     plt.show()
 
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from src.piece import *
-from src.util import *
+from App.src.piece import *
+from App.src.util import *
 import os
 
 def rollDice(board):

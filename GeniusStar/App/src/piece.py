@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import os
 
-from src.util import roundHalf
+def roundHalf(value):
+    return np.round(value * 2) / 2
 
 class Piece:
 
