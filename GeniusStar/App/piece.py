@@ -1,23 +1,29 @@
 import numpy as np
 import pandas as pd
 import os
+import pygame
 
-from triangle import Triangle
+def calculateCenter(triangle):
+    x = (triangle["v1_x"] + triangle["v2_x"] + triangle["v3_x"]) / 3
+    y = (triangle["v1_y"] + triangle["v2_y"] + triangle["v3_y"]) / 3
+    return (x, y)
 
 def signedRatio(pos1, pos2, pos3):
     # The best way to determine if a point is in a triangle is though Baycentric Coordinates. EXPAND
     return (pos1[0] - pos3[0]) * (pos2[1] - pos3[1]) - (pos2[0] - pos3[0]) * (pos1[1] - pos3[1])
 
+def roundHalf(value):
+    return np.round(value * 2) / 2
+
 class Piece:
+
+    centerPoint = (0, 0)
+    flipped = False
 
     def __init__(self, fileLocation=None):
         self.fileLocation = fileLocation
         self.name = os.path.splitext(os.path.basename(fileLocation))[0]    
-        self.createPiece(fileLocation)
-
-    def calculateCenter(self):
-        self.data['center_x'] = (self.data['v1_x'] + self.data['v2_x'] + self.data['v3_x']) / 3
-        self.data['center_y'] = (self.data['v1_y'] + self.data['v2_y'] + self.data['v3_y']) / 3
+        self.createPiece()
 
     def scalePiece(self, scale = 100):
         self.data['v1_x'] = (self.data['v1_x'] * scale)
@@ -26,58 +32,81 @@ class Piece:
         self.data['v1_y'] = (self.data['v1_y'] * scale)
         self.data['v2_y'] = (self.data['v2_y'] * scale)
         self.data['v3_y'] = (self.data['v3_y'] * scale)
-
-    def updateTrianglePos(self, location):
-        for triangle in self.triangle_list:
-            triangle.moveVertices(location[0], location[1])
     
-    def placePiece(self, location):
-        self. updateTrianglePos(location)
+    def updatePiecePos(self, location):
         self.data['v1_x'] = (self.data['v1_x'] + location[0])
         self.data['v2_x'] = (self.data['v2_x'] + location[0])
         self.data['v3_x'] = (self.data['v3_x'] + location[0])
         self.data['v1_y'] = (self.data['v1_y'] + location[1])
         self.data['v2_y'] = (self.data['v2_y'] + location[1])
         self.data['v3_y'] = (self.data['v3_y'] + location[1])
-        self.calculateCenter()
+        self.centerPoint = (self.centerPoint[0] + location[0], self.centerPoint[1] + location[1])
 
-    def createPiece(self, fileLocation):
-        df = pd.read_csv(fileLocation)
+    def rotateForwards(self):
+        # Rotate All Three Vertices.
+        for vertex in range(1,4):
+            # We have to update the axis individually and the calculations are based on the original.
+            x = self.data['v'+str(vertex)+'_x'] - self.centerPoint[0]
+            y = self.data['v'+str(vertex)+'_y'] - self.centerPoint[1]
+            x_new = roundHalf(x*np.cos(np.pi/3) - y*np.sin(np.pi/3))
+            y_new = roundHalf(y*np.cos(np.pi/3) + x*np.sin(np.pi/3))
+            self.data['v'+str(vertex)+'_x'] = x_new + self.centerPoint[0]
+            self.data['v'+str(vertex)+'_y'] = y_new + self.centerPoint[1]
+        self.data['orientation'] = ~self.data['orientation']
+
+    def rotateBackwords(self):
+        # Rotate All Three Vertices.
+        for vertex in range(1,4):
+            # We have to update the axis individually and the calculations are based on the original.
+            x = self.data['v'+str(vertex)+'_x'] - self.centerPoint[0]
+            y = self.data['v'+str(vertex)+'_y'] - self.centerPoint[1]
+            x_new = roundHalf(x*np.cos((-1*np.pi)/3) - y*np.sin((-1*np.pi)/3))
+            y_new = roundHalf(y*np.cos((-1*np.pi)/3) + x*np.sin((-1*np.pi)/3))
+            self.data['v'+str(vertex)+'_x'] = x_new + self.centerPoint[0]
+            self.data['v'+str(vertex)+'_y'] = y_new + self.centerPoint[1]
+        self.data['orientation'] = ~self.data['orientation']
+
+    def flipPiece(self):
+        # Flips the piece around the y-axis.
+        for vertex in range(1,4):
+            diff = self.data['v'+str(vertex)+'_x'] - self.centerPoint[0]
+            self.data['v'+str(vertex)+'_x'] = self.centerPoint[0] - diff
+        self.flipped = not self.flipped
+
+    def createPiece(self):
+        df = pd.read_csv(self.fileLocation)
         df = df.set_index("triangle_id")
         self.data = df
         self.scalePiece()
-        self.calculateCenter()
-        self.buildTriangles()
 
     def posInPiece(self, pos):
         # TODO: Better Documentation of this Baycentric Math.
-        for triangle in self.triangle_list:
-            determinate1 = signedRatio(pos, triangle.v1, triangle.v2)
-            determinate2 = signedRatio(pos, triangle.v2, triangle.v3)
-            determinate3 = signedRatio(pos, triangle.v3, triangle.v1) 
-
+        for id in self.data.index:
+            determinate1 = signedRatio(pos, 
+                                       (self.data.loc[id, 'v1_x'], self.data.loc[id, 'v1_y']),
+                                       (self.data.loc[id, 'v2_x'], self.data.loc[id, 'v2_y'])
+            )
+            determinate2 = signedRatio(pos,
+                                       (self.data.loc[id, 'v2_x'], self.data.loc[id, 'v2_y']),
+                                       (self.data.loc[id, 'v3_x'], self.data.loc[id, 'v3_y'])
+            )
+            determinate3 = signedRatio(pos,
+                                       (self.data.loc[id, 'v3_x'], self.data.loc[id, 'v3_y']),
+                                       (self.data.loc[id, 'v1_x'], self.data.loc[id, 'v1_y'])
+            )
             has_neg = (determinate1 < 0) or (determinate2 < 0) or (determinate3 < 0)
             has_pos = (determinate1 > 0) or (determinate2 > 0) or (determinate3 > 0)
 
             if not (has_neg and has_pos):
-                return True
-        return False
-
-    
-    def buildTriangles(self):
-        self.triangle_list = []
-        for row in self.data.index:
-            self.triangle_list.append(
-                Triangle(
-                    id = row,
-                    v1 = (self.data.loc[row, "v1_x"], self.data.loc[row, "v1_y"]),
-                    v2 = (self.data.loc[row, "v2_x"], self.data.loc[row, "v2_y"]),
-                    v3 = (self.data.loc[row, "v3_x"], self.data.loc[row, "v3_y"])
-                )
-            )
+                return True, id
+        return False, None
 
     def displayTriangles(self, screen):
-        for triangle in self.triangle_list:
-            # print(triangle.getVertices())
-            triangle.displayTriangle(screen, self.color, 0)
-            triangle.displayTriangle(screen, (0,0,0), 2)
+        for id in self.data.index:
+            vertices = (
+                (self.data.loc[id, "v1_x"], self.data.loc[id, "v1_y"]),
+                (self.data.loc[id, "v2_x"], self.data.loc[id, "v2_y"]),
+                (self.data.loc[id, "v3_x"], self.data.loc[id, "v3_y"])
+            )
+            pygame.draw.polygon(screen, self.color, vertices, 0)
+            pygame.draw.polygon(screen, (0,0,0), vertices, 2)

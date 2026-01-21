@@ -1,127 +1,44 @@
 import pygame
-import os
-import pandas as pd
-import numpy as np
 
-from board import Board
-from triangle import Triangle
-from piece import Piece
+from setup import Setup
 
-# To Speed Up Blitting: we could blit the board for the space it was just moved from, and then the moving piece. 
+# To Speed Up Blitting (if necessary): we could blit the board for the space it was just moved from, and then the moving piece. 
 
-def scaleBoard(board, scale = 100, center = (427, 360)):
-    board['v1_x'] = (board['v1_x'] * scale) + center[0]
-    board['v2_x'] = (board['v2_x'] * scale) + center[0]
-    board['v3_x'] = (board['v3_x'] * scale) + center[0]
-    board['v1_y'] = (board['v1_y'] * scale) + center[1]
-    board['v2_y'] = (board['v2_y'] * scale) + center[1]
-    board['v3_y'] = (board['v3_y'] * scale) + center[1]
-    return board
+def calculateCenter(triangle):
+    x = (triangle["v1_x"] + triangle["v2_x"] + triangle["v3_x"]) / 3
+    y = (triangle["v1_y"] + triangle["v2_y"] + triangle["v3_y"]) / 3
+    return (x, y)
 
-
-def buildBoard():
-    board_import = pd.read_csv("Resources3/Board.csv")
-    board_import = scaleBoard(board_import)
-    board_import['center_x'] = (board_import['v1_x'] + board_import['v2_x'] + board_import['v3_x']) / 3
-    board_import['center_y'] = (board_import['v1_y'] + board_import['v2_y'] + board_import['v3_y']) / 3
-    board_import["piece"] = None
-    board_import = board_import.set_index('triangle_id')
-    board = Board(board_import)
-    return board
-
-def buildObstacles(board, obstacles):
-    # Create the Triangle Objects for each Obstacle based on the board information.
-    triangle_list = []
-    for obstacle in obstacles:
-        triangle_list.append(
-            Triangle(
-                "obstacle",
-                (board.table.loc[obstacle, "v1_x"], board.table.loc[obstacle, "v1_y"]),
-                (board.table.loc[obstacle, "v2_x"], board.table.loc[obstacle, "v2_y"]),
-                (board.table.loc[obstacle, "v3_x"], board.table.loc[obstacle, "v3_y"])
-            )
-        )
-    return triangle_list
+def displayPieces(screen, piece):
+    for piece in pieces:
+        pieces[piece].displayTriangles(screen)
 
 def displayObstacles(screen, obstacles):
     for obstacle in obstacles:
         # print(obstacle.getVertices())
-        pygame.draw.polygon(screen, (255,255,255), obstacle.getVertices(), 0)
+        obstacle.displayTriangles(screen)
 
-
-def rollDices(board):
-    rand1 = np.random.choice([12, 13, 23, 24, 32, 33, 41, 42])
-    board.table.loc[rand1, "piece"] = "obstacle"
-    rand2 = np.random.choice([2, 4, 7, 8, 9, 11, 16, 17])
-    board.table.loc[rand2, "piece"] = "obstacle"
-    rand3 = np.random.choice([25, 26, 36, 37, 38, 40, 45, 47])
-    board.table.loc[rand3, "piece"] = "obstacle"
-    rand4 = np.random.choice([10,27,31])
-    board.table.loc[rand4, "piece"] = "obstacle"
-    rand5 = np.random.choice([18, 22, 39])
-    board.table.loc[rand5, "piece"] = "obstacle"
-    rand6 = np.random.choice([1, 5, 15, 34, 44, 48])
-    board.table.loc[rand6, "piece"] = "obstacle"
-    rand7 = np.random.choice([19, 20, 21, 28, 29, 30])
-    board.table.loc[rand7, "piece"] = "obstacle"
-    obstacles = [rand1, rand2, rand3, rand4, rand5, rand6, rand7]
-    print(f"The Dice Rolls are {rand1}, {rand2}, {rand3}, {rand4}, {rand5}, {rand6}, {rand7}")
-    return board, buildObstacles(board, obstacles)
-
-def setPieceColors(pieces):
-    pieces["DarkGreen5.csv"].color = (0,153,0)
-    pieces["Lavender5.csv"].color = (153,0,153)
-    pieces["LightGreen5.csv"].color = (0,255,0)
-    pieces["Red5.csv"].color = (255,0,0)
-    pieces["Purple4.csv"].color = (102,0,204)
-    pieces["Orange4.csv"].color = (255,128,0)
-    pieces["Pink4.csv"].color = (255,0,255)
-    pieces["Blue3_1.csv"].color = (0,128,255)
-    pieces["Blue3_2.csv"].color = (0,128,255)
-    pieces["Yellow2.csv"].color = (255,255,0)
-    pieces["DarkBlue1.csv"].color = (0,0,204)
-
-def setPieceLocations(pieces):
-    pieces["DarkGreen5.csv"].placePiece((875, 40))
-    pieces["Lavender5.csv"].placePiece((1124, 48))
-    pieces["LightGreen5.csv"].placePiece((893, 182))
-    pieces["Red5.csv"].placePiece((1161 ,178))
-    pieces["Purple4.csv"].placePiece((881, 313))
-    pieces["Orange4.csv"].placePiece((1143, 315))
-    pieces["Pink4.csv"].placePiece((874,462))
-    pieces["Blue3_1.csv"].placePiece((1139, 473))
-    pieces["Blue3_2.csv"].placePiece((858, 579))
-    pieces["Yellow2.csv"].placePiece((1107, 566))
-    pieces["DarkBlue1.csv"].placePiece(((100, 560)))
-
-
-def buildPieces():
-    folderPath = "Resources3/GamePieces/"
-    pieces = {}
-    for fileName in os.listdir(folderPath):
-        filePath = os.path.join(folderPath, fileName)
-        if os.path.isfile(filePath):
-            pieces[fileName] = Piece(filePath)
-    return pieces
-
-def displayPieces(screen, pieces):
-    for piece in pieces:
-        pieces[piece].displayTriangles(screen)
-
-def startGame():
-    board = buildBoard()
-    pieces = buildPieces()
-    setPieceColors(pieces)
-    setPieceLocations(pieces)
-    return board, pieces
+def distanceBetweenTriangles(triangle1, triangle2):
+    center1 = calculateCenter(triangle1)
+    center2 = calculateCenter(triangle2)
+    return (center1[0] - center2[0], center1[1] - center2[1])
 
 def isClickOnPiece(pieces, pos):
     # The best way to determine if a point is in a triangle is though Baycentric Coordinates. EXPAND
     # TODO: This can be sped up via pandas.
     for piece in pieces:
-        if pieces[piece].posInPiece(pos):
-            return piece
-    return None
+        inPiece, triangle = pieces[piece].posInPiece(pos)
+        if inPiece:
+            return piece, triangle
+    return None, None
+
+def isClickOnBoard(board, pos):
+    # The best way to determine if a point is in a triangle is though Baycentric Coordinates. EXPAND
+    # TODO: This can be sped up via pandas.
+    inBoard, triangle = board.posInPiece(pos)
+    if inBoard:
+        return True, triangle
+    return False, None
 
 pygame.init()
 pygame.font.init()
@@ -135,25 +52,42 @@ previousMousePos = None
 
 pygame.display.set_caption('Genius Star')
 
-board, pieces = startGame()
-board, obstacles = rollDices(board)
-
+setup = Setup()
+board, pieces, obstacles = setup.playGame()
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            clickedPiece = isClickOnPiece(pieces, pygame.mouse.get_pos())
+            clickedPiece, pieceTriangleId = isClickOnPiece(pieces, pygame.mouse.get_pos())
             if clickedPiece: 
                 previousMousePos = pygame.mouse.get_pos()
-        if event.type == pygame.MOUSEMOTION and clickedPiece is not None:
+        if event.type == pygame.MOUSEMOTION and clickedPiece:
             newMousePos = pygame.mouse.get_pos()
             mousePosDiff = (newMousePos[0] - previousMousePos[0], newMousePos[1] - previousMousePos[1])
-            pieces[clickedPiece].placePiece(mousePosDiff)
+            pieces[clickedPiece].updatePiecePos(mousePosDiff)
             previousMousePos = newMousePos
-        if event.type == pygame.MOUSEBUTTONUP:
+        if event.type == pygame.MOUSEBUTTONUP and clickedPiece:
+            clickedBoard, boardTriangleId = isClickOnBoard(board, pygame.mouse.get_pos())
+            if clickedBoard and board.data.loc[boardTriangleId, "orientation"] == pieces[clickedPiece].data.loc[pieceTriangleId, "orientation"]:
+                mousePosDiff = distanceBetweenTriangles(board.data.loc[boardTriangleId, :], pieces[clickedPiece].data.loc[pieceTriangleId, :])
+                pieces[clickedPiece].updatePiecePos(mousePosDiff)
+            else:
+                originalPiecePos = setup.config.getPieceOirignalPos(clickedPiece)
+                pieceCurentCenterPos = pieces[clickedPiece].centerPoint
+                mousePosDiff = (originalPiecePos[0] - pieceCurentCenterPos[0], originalPiecePos[1] - pieceCurentCenterPos[1])
+                pieces[clickedPiece].updatePiecePos(mousePosDiff)
             clickedPiece = None
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a and clickedPiece:
+                pieces[clickedPiece].rotateBackwords()
+            if event.key == pygame.K_d and clickedPiece:
+                pieces[clickedPiece].rotateForwards()
+            if event.key == pygame.K_w and clickedPiece:
+                pieces[clickedPiece].flipPiece()
+            if event.key == pygame.K_s and clickedPiece:
+                pieces[clickedPiece].flipPiece()
     screen.fill([104, 104, 104]) 
     displayPieces(screen, pieces)
     displayObstacles(screen, obstacles)
