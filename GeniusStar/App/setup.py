@@ -24,10 +24,10 @@ class Setup:
         self.pieces = self.config.setPieceLocations(self.pieces)
 
     def buildBoard(self):
-        self.board = Board("Resources3/Board.csv")
+        self.board = Board("Resources/Board.csv")
     
     def buildPieces(self):
-        folderPath = "Resources3/GamePieces/"
+        folderPath = "Resources/GamePieces/"
         self.pieces = {}
         for fileName in os.listdir(folderPath):
             filePath = os.path.join(folderPath, fileName)
