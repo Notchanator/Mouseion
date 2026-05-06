@@ -67,7 +67,7 @@ class Board:
                 return True, id
         return False, None
 
-    def displayTriangles(self, screen, font):
+    def displayTriangles(self, screen):
         for id in self.data.index:
             vertices = (
                 (self.data.loc[id, "v1_x"], self.data.loc[id, "v1_y"]),
@@ -75,6 +75,9 @@ class Board:
                 (self.data.loc[id, "v3_x"], self.data.loc[id, "v3_y"])
             )
             pygame.draw.polygon(screen, (0,0,0), vertices, 5)
+
+    def displayTriangleNumbers(self, screen, font):
+        for id in self.data.index:
             display = font.render(str(id), 1, (0,0,0))
             display_pos = display.get_rect(center = calculateCenter(self.data.loc[id, :]))
             screen.blit(display, display_pos)

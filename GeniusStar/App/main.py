@@ -80,18 +80,20 @@ while running:
                 pieces[clickedPiece].updatePiecePos(mousePosDiff)
             clickedPiece = None
         if event.type == pygame.KEYDOWN:
+            mousePos = pygame.mouse.get_pos()
             if event.key == pygame.K_a and clickedPiece:
-                pieces[clickedPiece].rotateBackwords()
+                pieces[clickedPiece].rotateBackwords(mousePos)
             if event.key == pygame.K_d and clickedPiece:
-                pieces[clickedPiece].rotateForwards()
+                pieces[clickedPiece].rotateForwards(mousePos)
             if event.key == pygame.K_w and clickedPiece:
-                pieces[clickedPiece].flipPiece()
+                pieces[clickedPiece].flipPiece(mousePos)
             if event.key == pygame.K_s and clickedPiece:
-                pieces[clickedPiece].flipPiece()
+                pieces[clickedPiece].flipPiece(mousePos)
     screen.fill([104, 104, 104]) 
-    displayPieces(screen, pieces)
+    board.displayTriangles(screen)
+    board.displayTriangleNumbers(screen, font)
     displayObstacles(screen, obstacles)
-    board.displayTriangles(screen, font)
+    displayPieces(screen, pieces)
     pygame.display.flip()
     # limits FPS to 60
     # dt is delta time in seconds since last frame, used for framerate-
