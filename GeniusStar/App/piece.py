@@ -42,34 +42,34 @@ class Piece:
         self.data['v3_y'] = (self.data['v3_y'] + location[1])
         self.centerPoint = (self.centerPoint[0] + location[0], self.centerPoint[1] + location[1])
 
-    def rotateForwards(self):
-        # Rotate All Three Vertices.
+    def rotateForwards(self, pos):
+        # Rotate All Three Vertices around the mouse position.
         for vertex in range(1,4):
             # We have to update the axis individually and the calculations are based on the original.
-            x = self.data['v'+str(vertex)+'_x'] - self.centerPoint[0]
-            y = self.data['v'+str(vertex)+'_y'] - self.centerPoint[1]
-            x_new = roundHalf(x*np.cos(np.pi/3) - y*np.sin(np.pi/3))
-            y_new = roundHalf(y*np.cos(np.pi/3) + x*np.sin(np.pi/3))
-            self.data['v'+str(vertex)+'_x'] = x_new + self.centerPoint[0]
-            self.data['v'+str(vertex)+'_y'] = y_new + self.centerPoint[1]
+            x = self.data['v'+str(vertex)+'_x']
+            y = self.data['v'+str(vertex)+'_y']
+            x_new = roundHalf(pos[0] + (x - pos[0]) * np.cos(np.pi / 3) - (y - pos[1]) * np.sin(np.pi / 3))
+            y_new = roundHalf(pos[1] + (y - pos[1]) * np.cos(np.pi / 3) + (x - pos[0]) * np.sin(np.pi / 3))
+            self.data['v'+str(vertex)+'_x'] = x_new
+            self.data['v'+str(vertex)+'_y'] = y_new
         self.data['orientation'] = ~self.data['orientation']
 
-    def rotateBackwords(self):
-        # Rotate All Three Vertices.
+    def rotateBackwords(self, pos):
+        # Rotate All Three Vertices around the mouse position.
         for vertex in range(1,4):
             # We have to update the axis individually and the calculations are based on the original.
-            x = self.data['v'+str(vertex)+'_x'] - self.centerPoint[0]
-            y = self.data['v'+str(vertex)+'_y'] - self.centerPoint[1]
-            x_new = roundHalf(x*np.cos((-1*np.pi)/3) - y*np.sin((-1*np.pi)/3))
-            y_new = roundHalf(y*np.cos((-1*np.pi)/3) + x*np.sin((-1*np.pi)/3))
-            self.data['v'+str(vertex)+'_x'] = x_new + self.centerPoint[0]
-            self.data['v'+str(vertex)+'_y'] = y_new + self.centerPoint[1]
+            x = self.data['v'+str(vertex)+'_x']
+            y = self.data['v'+str(vertex)+'_y']
+            x_new = roundHalf(pos[0] + (x - pos[0]) * np.cos(-1 * np.pi / 3) - (y - pos[1]) * np.sin(-1 * np.pi / 3))
+            y_new = roundHalf(pos[1] + (y - pos[1]) * np.cos(-1 * np.pi / 3) + (x - pos[0]) * np.sin(-1 * np.pi / 3))
+            self.data['v'+str(vertex)+'_x'] = x_new
+            self.data['v'+str(vertex)+'_y'] = y_new
         self.data['orientation'] = ~self.data['orientation']
 
-    def flipPiece(self):
-        # Flips the piece around the y-axis.
+    def flipPiece(self, pos):
+        # Flips the piece around mouse position.
         for vertex in range(1,4):
-            diff = self.data['v'+str(vertex)+'_x'] - self.centerPoint[0]
+            diff = self.data['v'+str(vertex)+'_x'] - pos[0]
             self.data['v'+str(vertex)+'_x'] = self.centerPoint[0] - diff
         self.flipped = not self.flipped
 
