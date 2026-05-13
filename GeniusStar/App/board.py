@@ -110,4 +110,30 @@ class Board:
             return False, None 
         return True, overlappingTriangles
     
+    def getOverlappingTrianglesForPiece(self, piece):
+        triangleIds = []
+        for id in piece.data.index:
+            inPiece, triangleId = self.posInPiece(calculateCenter(piece.data.loc[id,]))
+            if inPiece:
+                triangleIds.append(triangleId)
+        return triangleIds
+    
+    def placePiece(self, piece):
+        triangles = self.getOverlappingTrianglesForPiece(piece)
+        for id in triangles:
+            self.data.loc[id, "piece"] = piece.name
+
+    def removePiece(self, piece):
+        triangles = self.getOverlappingTrianglesForPiece(piece)
+        if len(triangles) > 0:
+            for id in triangles:
+                self.data.loc[id, "piece"] = None
+    
+    # TODO: Rewrite the following function to be more efficient and better code practice.
+    def allPiecesOpen(self, boardTriangles):
+        for id in boardTriangles:
+            if self.data.loc[id, "piece"] != None:
+                return False
+        return True
+    
         
