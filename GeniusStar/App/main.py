@@ -1,8 +1,11 @@
 import pygame
-
+from shapely.geometry import Polygon
 from setup import Setup
+from board import createShapelyTriangle
 
 # To Speed Up Blitting (if necessary): we could blit the board for the space it was just moved from, and then the moving piece. 
+
+
 
 def calculateCenter(triangle):
     x = (triangle["v1_x"] + triangle["v2_x"] + triangle["v3_x"]) / 3
@@ -23,6 +26,7 @@ def distanceBetweenTriangles(triangle1, triangle2):
     center2 = calculateCenter(triangle2)
     return (center1[0] - center2[0], center1[1] - center2[1])
 
+
 def isClickOnPiece(pieces, pos):
     # The best way to determine if a point is in a triangle is though Baycentric Coordinates. EXPAND
     # TODO: This can be sped up via pandas.
@@ -39,6 +43,20 @@ def isClickOnBoard(board, pos):
     if inBoard:
         return True, triangle
     return False, None
+
+def isPieceOnBoard(board, pieceTriangle):
+    # This can be improved to only check triangles near the mouse, instead of all triangles.
+    for triangleId in board.data.index:
+        distanceBetweenTriangles
+
+def findValidPlacement(board, boardTriangles, piece, pieceTriangleId):
+    sortedTriangles = dict(sorted(boardTriangles.items(), key=lambda x: x[1], reverse=True))
+    for id, overlap in sortedTriangles.items():
+        if board.data.loc[id, "orientation"] == piece.data.loc[pieceTriangleId, "orientation"]:
+            return True, id
+    return False, None
+
+
 
 pygame.init()
 pygame.font.init()
@@ -69,10 +87,14 @@ while running:
             pieces[clickedPiece].updatePiecePos(mousePosDiff)
             previousMousePos = newMousePos
         if event.type == pygame.MOUSEBUTTONUP and clickedPiece:
-            clickedBoard, boardTriangleId = isClickOnBoard(board, pygame.mouse.get_pos())
-            if clickedBoard and board.data.loc[boardTriangleId, "orientation"] == pieces[clickedPiece].data.loc[pieceTriangleId, "orientation"]:
-                mousePosDiff = distanceBetweenTriangles(board.data.loc[boardTriangleId, :], pieces[clickedPiece].data.loc[pieceTriangleId, :])
-                pieces[clickedPiece].updatePiecePos(mousePosDiff)
+            # clickedBoard, boardTriangleId = isClickOnBoard(board, pygame.mouse.get_pos())
+            clickedBoard, overlappingBoardTriangles = board.getOverlappingTriangles(createShapelyTriangle(pieces[clickedPiece].data.loc[pieceTriangleId,]))
+            if clickedBoard:
+                print(overlappingBoardTriangles)
+                isVald, boardTriangleId = findValidPlacement(board, overlappingBoardTriangles, pieces[clickedPiece], pieceTriangleId)
+                if isVald:
+                    mousePosDiff = distanceBetweenTriangles(board.data.loc[boardTriangleId, :], pieces[clickedPiece].data.loc[pieceTriangleId, :])
+                    pieces[clickedPiece].updatePiecePos(mousePosDiff)
             else:
                 originalPiecePos = setup.config.getPieceOirignalPos(clickedPiece)
                 pieceCurentCenterPos = pieces[clickedPiece].centerPoint

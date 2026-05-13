@@ -1,6 +1,16 @@
 import pygame
 import pandas as pd
 import os
+from shapely.geometry import Polygon
+
+def createShapelyTriangle(triangle):
+    # Create a Shapely Triangle from a data row.
+    return Polygon(
+        [(triangle["v1_x"], triangle["v1_y"]),
+         (triangle["v2_x"], triangle["v2_y"]),
+         (triangle["v3_x"], triangle["v3_y"]),
+        ]
+    )
 
 def signedRatio(pos1, pos2, pos3):
     # The best way to determine if a point is in a triangle is though Baycentric Coordinates. EXPAND
@@ -27,6 +37,7 @@ class Board:
         self.data = df
         self.scalePiece()
         self.updatePiecePos()
+        self.createShapelyDict(create=True)
     
     def scalePiece(self, scale = 100):
         self.data['v1_x'] = (self.data['v1_x'] * scale)
@@ -44,6 +55,12 @@ class Board:
         self.data['v2_y'] = (self.data['v2_y'] + location[1])
         self.data['v3_y'] = (self.data['v3_y'] + location[1])
         self.centerPoint = (self.centerPoint[0] + location[0], self.centerPoint[1] + location[1])
+
+    def createShapelyDict(self, create=False):
+        if create:
+            self.shapelyTriangles = {}
+        for id in self.data.index:
+            self.shapelyTriangles[id] = createShapelyTriangle(self.data.loc[id,])
 
     def posInPiece(self, pos):
         # TODO: Better Documentation of this Baycentric Math.
@@ -81,4 +98,16 @@ class Board:
             display = font.render(str(id), 1, (0,0,0))
             display_pos = display.get_rect(center = calculateCenter(self.data.loc[id, :]))
             screen.blit(display, display_pos)
+        
+    def getOverlappingTriangles(self, triangle):
+        overlappingTriangles = {}
+        for id in self.data.index:
+            overlap = triangle.intersection(self.shapelyTriangles[id]).area
+            overlap_pct = (overlap / triangle.area)
+            if overlap_pct > 0:
+                overlappingTriangles[id] = overlap_pct
+        if len(overlappingTriangles) == 0:
+            return False, None 
+        return True, overlappingTriangles
+    
         
