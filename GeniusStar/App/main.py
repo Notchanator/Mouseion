@@ -18,7 +18,6 @@ def displayPieces(screen, piece):
 
 def displayObstacles(screen, obstacles):
     for obstacle in obstacles:
-        # print(obstacle.getVertices())
         obstacle.displayTriangles(screen)
 
 def distanceBetweenTriangles(triangle1, triangle2):
@@ -44,15 +43,20 @@ def isClickOnBoard(board, pos):
         return True, triangle
     return False, None
 
-def isPieceOnBoard(board, pieceTriangle):
-    # This can be improved to only check triangles near the mouse, instead of all triangles.
-    for triangleId in board.data.index:
-        distanceBetweenTriangles
 
 def findValidPlacement(board, boardTriangles, piece, pieceTriangleId):
+    # Sort the triangles by overlap.
     sortedTriangles = dict(sorted(boardTriangles.items(), key=lambda x: x[1], reverse=True))
     for id, overlap in sortedTriangles.items():
-        if board.data.loc[id, "orientation"] == piece.data.loc[pieceTriangleId, "orientation"]:
+        if board.data.loc[id, "orientation"] != piece.data.loc[pieceTriangleId, "orientation"]:
+            continue
+        # We will actually place the piece to identify the locations of all it's triangles. This can be improved.
+        distanceToPlace = distanceBetweenTriangles(board.data.loc[id, :], piece.data.loc[pieceTriangleId, :])
+        piece.updatePiecePos(distanceToPlace)
+        boardTriangles = board.getOverlappingTrianglesForPiece(piece)
+        if piece.data.shape[0] != len(boardTriangles):
+            continue
+        if board.allPiecesOpen(boardTriangles):
             return True, id
     return False, None
 
@@ -81,6 +85,7 @@ while running:
             clickedPiece, pieceTriangleId = isClickOnPiece(pieces, pygame.mouse.get_pos())
             if clickedPiece: 
                 previousMousePos = pygame.mouse.get_pos()
+                board.removePiece(pieces[clickedPiece])
         if event.type == pygame.MOUSEMOTION and clickedPiece:
             newMousePos = pygame.mouse.get_pos()
             mousePosDiff = (newMousePos[0] - previousMousePos[0], newMousePos[1] - previousMousePos[1])
@@ -90,16 +95,23 @@ while running:
             # clickedBoard, boardTriangleId = isClickOnBoard(board, pygame.mouse.get_pos())
             clickedBoard, overlappingBoardTriangles = board.getOverlappingTriangles(createShapelyTriangle(pieces[clickedPiece].data.loc[pieceTriangleId,]))
             if clickedBoard:
-                print(overlappingBoardTriangles)
                 isVald, boardTriangleId = findValidPlacement(board, overlappingBoardTriangles, pieces[clickedPiece], pieceTriangleId)
                 if isVald:
                     mousePosDiff = distanceBetweenTriangles(board.data.loc[boardTriangleId, :], pieces[clickedPiece].data.loc[pieceTriangleId, :])
+                    board.placePiece(pieces[clickedPiece])
+                    pieces[clickedPiece].updatePiecePos(mousePosDiff)
+                else:
+                    originalPiecePos = setup.config.getPieceOirignalPos(clickedPiece)
+                    pieceCurentCenterPos = pieces[clickedPiece].centerPoint
+                    mousePosDiff = (originalPiecePos[0] - pieceCurentCenterPos[0], originalPiecePos[1] - pieceCurentCenterPos[1])
                     pieces[clickedPiece].updatePiecePos(mousePosDiff)
             else:
                 originalPiecePos = setup.config.getPieceOirignalPos(clickedPiece)
                 pieceCurentCenterPos = pieces[clickedPiece].centerPoint
                 mousePosDiff = (originalPiecePos[0] - pieceCurentCenterPos[0], originalPiecePos[1] - pieceCurentCenterPos[1])
+                board.removePiece(pieces[clickedPiece])
                 pieces[clickedPiece].updatePiecePos(mousePosDiff)
+
             clickedPiece = None
         if event.type == pygame.KEYDOWN:
             mousePos = pygame.mouse.get_pos()

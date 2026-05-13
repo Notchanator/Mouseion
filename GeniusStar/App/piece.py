@@ -120,6 +120,3 @@ class Piece:
             )
             pygame.draw.polygon(screen, self.color, vertices, 0)
             pygame.draw.polygon(screen, (0,0,0), vertices, 2)
-
-    def getShapelyTriangle(self, id):
-        return 

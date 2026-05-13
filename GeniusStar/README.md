@@ -11,8 +11,6 @@ source /Users/notchjohnson/Mouseion/Mouseion/GeniusStar/.venv/bin/activate
 ## Development & Tasks
 ** Game Movement **
 - Pieces are drawn in id order, we should display picked-up pieces first, if they exist
-- We don't want to allow pieces to be placed on Obstacles
-- We don't want to allow pieces to be placed outside the board
 
 ** Game Mechanics **
 - Game should identify when it has been successfully solved
@@ -23,6 +21,7 @@ source /Users/notchjohnson/Mouseion/Mouseion/GeniusStar/.venv/bin/activate
 
 ** Code Improvements **
 - Abstract Board class to inherit Piece class
+- Refactor the Piece Placement Check Logic
 
 ** Fastest Solver **
 - Implement First Iteration of Fastest Solver
@@ -31,7 +30,3 @@ source /Users/notchjohnson/Mouseion/Mouseion/GeniusStar/.venv/bin/activate
 - Convert to use new board structure, and OOP.
 - Setup Parrallel Processes to improve speed. 
 
-----
-- Identify Triangle of Piece that Mouse is In
-- Which Triangle does it overlap with the most?
-    - Place it on that triangle if compatitable 
