@@ -2,6 +2,16 @@ import numpy as np
 import pandas as pd
 import os
 import pygame
+from shapely.geometry import Polygon
+
+def createShapelyTriangle(triangle):
+    # Create a Shapely Triangle from a data row.
+    return Polygon(
+        [(triangle["v1_x"], triangle["v1_y"]),
+         (triangle["v2_x"], triangle["v2_y"]),
+         (triangle["v3_x"], triangle["v3_y"]),
+        ]
+    )
 
 def calculateCenter(triangle):
     x = (triangle["v1_x"] + triangle["v2_x"] + triangle["v3_x"]) / 3
@@ -110,3 +120,6 @@ class Piece:
             )
             pygame.draw.polygon(screen, self.color, vertices, 0)
             pygame.draw.polygon(screen, (0,0,0), vertices, 2)
+
+    def getShapelyTriangle(self, id):
+        return 
