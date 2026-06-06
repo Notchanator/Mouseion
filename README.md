@@ -8,5 +8,6 @@ Try to keep each branch contained to be within each project (subfolder).
 Each branch should be named with the following structure `{Project}-{Purpose}`; with the following shorthands per project:
 - Mouseion : M
 - GeniusStar : GS
+- Wordle : W
 
 
