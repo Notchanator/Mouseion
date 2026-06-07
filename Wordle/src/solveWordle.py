@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import sys
+from pathlib import Path
 
 # This script is meant as an aide to the actual Wordle application. Start without any guesses
 # and it will recommend a starting word then input the results to find the final word.
@@ -25,8 +26,8 @@ Workflow:
 
 class Wordle:
       
-    possibleAnswers = np.loadtxt("wordle_answers.csv", dtype=str)
-    allWords = np.loadtxt("wordle_guesses.csv", dtype=str)
+    possibleAnswers = np.loadtxt("/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/wordle_answers.csv", dtype=str)
+    allWords = np.loadtxt("/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/wordle_guesses.csv", dtype=str)
     turn = 0
     wordBank = {"a":-1, "b":-1, "c":-1, "d":-1, "e":-1, "f":-1, "g":-1, "h":-1, "i":-1, "j":-1, "k":-1, "l":-1, "m":-1, "n":-1, "o":-1, "p":-1, "q":-1, "r":-1, "s":-1, "t":-1, "u":-1, "v":-1, "w":-1, "x":-1, "y":-1, "z":-1}
 
@@ -48,15 +49,16 @@ class Wordle:
         # TODO an excpetion for duplicate letters in the word. 
         for index in range(len(usedWord)):
             # If Grey remove all words that contain any of that letter.
-            if usedWordScore[index] == 0:
+            if usedWordScore[index] == '0':
                 pass
             # If Yellow remove all words 
-            elif usedWordScore[index] == 1:
+            elif usedWordScore[index] == '1':
                 pass
             # If Green.
-            elif usedWordScore[index] == 2:
+            elif usedWordScore[index] == '2':
                 pass
             else:
+                print(usedWordScore[index])
                 raise Exception(f"Invalid Score for {usedWord}")
 
             
