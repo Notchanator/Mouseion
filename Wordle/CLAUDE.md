@@ -8,31 +8,38 @@ A Python implementation of Wordle with three components: a playable game, a solv
 
 ```
 Wordle/
-├── wordle.py              # Core Wordle class — game logic, word evaluation, word bank tracking
-├── playWordle.py          # Tkinter GUI — playable, repeatable Wordle app
-├── solveWordle.py         # CLI solver bot — entropy-based word suggester (separate Wordle class, TODO: merge)
-├── word-scraper.py        # Scraper to build word lists
-├── dataExploration.ipynb  # Jupyter notebook — letter frequency and entropy analysis
-├── wordle_answers.csv     # Valid answer words
-├── wordle_guesses.csv     # All valid guess words
-└── Outputs/               # Analysis output files (CSVs, PNGs)
+├── src/
+│   ├── wordle.py          # Core Wordle class — game logic, word evaluation, word bank tracking
+│   ├── playWordle.py      # Tkinter GUI — playable, repeatable Wordle app
+│   └── solveWordle.py     # CLI solver bot — entropy-based word suggester (separate Wordle class, TODO: merge)
+├── data/
+│   ├── wordle_answers.csv # Valid answer words
+│   ├── wordle_guesses.csv # All valid guess words
+│   └── winning_messages.csv
+├── scripts/
+│   └── word-scraper.py    # One-time utility to build word lists
+├── notebooks/
+│   └── dataExploration.ipynb  # Letter frequency and entropy analysis
+├── outputs/               # Generated analysis files (gitignored)
+└── docs/
+    └── Analysis.pages     # Analysis writeup
 ```
 
 ---
 
 ## How It Works
 
-### Core (`wordle.py`)
+### Core (`src/wordle.py`)
 - `Wordle` class manages game state: word bank (letter status tracking), turn counter, guess validation
 - `evaluateGuess()` scores a guess: green (correct position), yellow (wrong position), grey (not in word)
 - Word bank uses `-1` (unknown), `0` (grey), `1` (yellow), `2` (green) per letter
-- Words loaded via `np.loadtxt` — run from the `Wordle/` directory so relative CSV paths resolve
+- Data paths resolved via `pathlib` relative to `src/` — scripts can be run from any directory
 
-### Playable Game (`playWordle.py`)
+### Playable Game (`src/playWordle.py`)
 - Tkinter `App` canvas class — wraps `Wordle`, tracks stats across sessions
 - Prints the answer to console on game start (debug)
 
-### Solver (`solveWordle.py`)
+### Solver (`src/solveWordle.py`)
 - Standalone script — prompts for existing guesses + scores, then suggests next guess by entropy
 - Has its own `Wordle` class (duplicate of core — TODO: refactor into one)
 - Scoring format: word + score string, e.g. `"apple" "10021"` where 0=grey, 1=yellow, 2=green
@@ -41,12 +48,11 @@ Wordle/
 
 ## Running Locally
 
-Run from within the `Wordle/` directory so CSV paths resolve correctly:
+Data paths use `pathlib` relative to each script, so they can be run from any directory:
 
 ```bash
-cd Mouseion/Wordle
-python playWordle.py   # GUI game
-python solveWordle.py  # CLI solver
+python Wordle/src/playWordle.py   # GUI game
+python Wordle/src/solveWordle.py  # CLI solver
 ```
 
 Dependencies: `numpy`, `pandas`, `tkinter` (stdlib)
@@ -63,7 +69,7 @@ Dependencies: `numpy`, `pandas`, `tkinter` (stdlib)
 
 ## Notes for Claude
 
-- Keep file paths relative; scripts expect to be run from `Wordle/`
+- Data paths use `pathlib` (`_DATA_DIR = Path(__file__).parent.parent / "data"`) — no need to run from a specific directory
 - The word bank dict in `Wordle.__init__` uses `-1` as "unseen" (not `None` or `False`)
-- Don't modify `wordle_answers.csv` or `wordle_guesses.csv` without good reason — they're the source of truth for valid words
-- `__pycache__/` is gitignored; ignore it
+- Don't modify `data/wordle_answers.csv` or `data/wordle_guesses.csv` without good reason — they're the source of truth for valid words
+- `outputs/` is gitignored — generated files go there

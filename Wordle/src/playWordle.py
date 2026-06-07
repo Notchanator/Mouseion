@@ -1,6 +1,9 @@
 import tkinter as tk
 from wordle import Wordle
 import numpy as np
+from pathlib import Path
+
+_DATA_DIR = Path(__file__).parent.parent / "data"
 
 # This script runs a local application of wordle that can be played repeatedly. 
 
@@ -141,7 +144,7 @@ class App(tk.Canvas):
             self.gridLetters[self.row][i] = self.create_text(200 + 100*i,120 + 100*self.row,  text=self.guessWord[i].upper(), font=("Courier", 64))
 
     def winnerText(self):
-        possiblePhrases = np.loadtxt("winning_messages.csv", dtype=str)
+        possiblePhrases = np.loadtxt("/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/winning_messages.csv", dtype=str)
         phrase = np.random.choice(possiblePhrases, 1)[0]
         self.winnerBanner.append(self.create_rectangle(75, 675, 725, 775, fill="black"))
         self.winnerBanner.append(self.create_text(400, 725, text=phrase, fill="white", font=("Courier", 64)))

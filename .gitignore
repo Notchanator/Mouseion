@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Generated analysis outputs
+Wordle/outputs/
+
 # C extensions
 *.so
 
