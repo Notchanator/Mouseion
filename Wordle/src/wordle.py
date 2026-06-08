@@ -2,11 +2,11 @@ import numpy as np
 from pathlib import Path
 
 class Wordle:
-    def __init__(self, wordFileName=None, usedWords=[]):
+    def __init__(self, DATA, wordFileName=None, usedWords=[]):
         if wordFileName is None:
-            wordFileName =  "/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/wordle_guesses.csv"
+            wordFileName = DATA["guesses"]
         self.allWords = np.loadtxt(wordFileName, dtype=str)
-        self.possibleAnswers = np.loadtxt("/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/wordle_answers.csv", dtype=str)
+        self.possibleAnswers = np.loadtxt(DATA["answers"], dtype=str)
         self.turn = 0
         self.finished = False
         self.wordBank = {"a":-1, "b":-1, "c":-1, "d":-1, "e":-1, "f":-1, "g":-1, "h":-1, "i":-1, "j":-1, "k":-1, "l":-1, "m":-1, "n":-1, "o":-1, "p":-1, "q":-1, "r":-1, "s":-1, "t":-1, "u":-1, "v":-1, "w":-1, "x":-1, "y":-1, "z":-1}
@@ -94,8 +94,9 @@ def programBody(usedWords):
     return(wordle.playGame())
 
 
-usedWords = []
-while True:
-    usedWords.append(programBody(usedWords))
-    if len(usedWords) > 0 or usedWords[len(usedWords) - 1] is None:
-        exit()
+if __name__ == "__main__":
+    usedWords = []
+    while True:
+        usedWords.append(programBody(usedWords))
+        if len(usedWords) > 0 or usedWords[len(usedWords) - 1] is None:
+            exit()
