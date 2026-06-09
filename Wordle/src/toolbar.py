@@ -10,10 +10,19 @@ class ToolbarButton:
       - build(parent)  — construct and pack the button widget(s) into the toolbar frame
       - on_click()     — define what happens when the button is activated
     """
-    def __init__(self, toolbar, app):
+    def __init__(self, toolbar):
         self.toolbar = toolbar
-        self.app = app
         self.build(toolbar.frame)
+
+    @property
+    def app(self):
+        """Live reference to the game App, read through the toolbar.
+
+        The toolbar owns the App reference and may have it assigned after
+        buttons are registered, so buttons must read it lazily rather than
+        capturing it at construction time.
+        """
+        return self.toolbar.app
 
     def build(self, parent):
         raise NotImplementedError("Toolbar buttons must implement build()")
@@ -46,6 +55,6 @@ class Toolbar:
 
     def register(self, button_class):
         """Instantiate a ToolbarButton subclass and add it to the toolbar."""
-        button = button_class(self, self.app)
+        button = button_class(self)
         self.buttons.append(button)
         return button

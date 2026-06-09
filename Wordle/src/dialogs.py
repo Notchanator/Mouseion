@@ -102,3 +102,68 @@ class HowToDialog(BaseDialog):
             tile.create_text(18, 18, text=letter, font=("Courier", 16, "bold"), fill="black")
 
             tk.Label(row, text=description, font=("Courier", 12), anchor="w").pack(side=tk.LEFT)
+
+
+class StatisticsDialog(BaseDialog):
+    """
+    Displays the running game statistics: summary tallies plus a labelled
+    bar chart of the guess distribution. Receives a Statistics object and
+    only reads from it — never mutates game state.
+    """
+    _BAR_COLOR = "#333333"
+    _MAX_WIDTH = 200
+
+    def __init__(self, root, stats):
+        self._stats = stats
+        super().__init__(root, "Statistics")
+
+    def build(self):
+        frame = tk.Frame(self, padx=28, pady=20)
+        frame.pack()
+
+        tk.Label(frame, text="STATISTICS", font=("Courier", 16, "bold")).pack(pady=(0, 12))
+        self._build_summary(frame)
+
+        tk.Frame(frame, height=1, bg="#cccccc").pack(fill=tk.X, pady=(16, 12))
+        tk.Label(frame, text="GUESS DISTRIBUTION", font=("Courier", 12, "bold")).pack(pady=(0, 8))
+        self._build_distribution(frame)
+
+        tk.Button(
+            frame,
+            text="Close",
+            font=("Courier", 12, "bold"),
+            width=10,
+            command=self.close,
+        ).pack(pady=(20, 0))
+
+    def _build_summary(self, parent):
+        """Render the played / win% / lost summary across a row."""
+        summary = [
+            ("Played", self._stats.gamesPlayed),
+            ("Win %",  self._stats.winPercentage),
+            ("Lost",   self._stats.gamesLost),
+        ]
+        row = tk.Frame(parent)
+        row.pack()
+        for label, value in summary:
+            cell = tk.Frame(row, padx=14)
+            cell.pack(side=tk.LEFT)
+            tk.Label(cell, text=str(value), font=("Courier", 20, "bold")).pack()
+            tk.Label(cell, text=label, font=("Courier", 10), fg="#555555").pack()
+
+    def _build_distribution(self, parent):
+        """Render one labelled bar per guess count (1-6)."""
+        distribution = self._stats.guessDistribution
+        max_val = max(distribution.values()) if any(distribution.values()) else 1
+
+        for guesses, count in distribution.items():
+            row = tk.Frame(parent)
+            row.pack(fill=tk.X, pady=2)
+
+            tk.Label(row, text=str(guesses), font=("Courier", 12, "bold"), width=2, anchor="e").pack(side=tk.LEFT, padx=(0, 8))
+
+            bar_w = max(4, int(self._MAX_WIDTH * count / max_val)) if count > 0 else 4
+            bar = tk.Canvas(row, width=self._MAX_WIDTH + 30, height=22, highlightthickness=0)
+            bar.pack(side=tk.LEFT)
+            bar.create_rectangle(0, 1, bar_w, 21, fill=self._BAR_COLOR, outline="")
+            bar.create_text(bar_w + 6, 11, text=str(count), font=("Courier", 11), anchor="w")
