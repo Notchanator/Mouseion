@@ -1,11 +1,18 @@
 import tkinter as tk
 from wordle import Wordle
+from toolbar import Toolbar
+from buttons import HowToButton
+from conf import (
+    WINDOW, 
+    CANVAS, 
+    TILE, 
+    SCORE_COLORS, 
+    ALPHABET, 
+    END_BANNER, 
+    DATA
+)
 import numpy as np
-from pathlib import Path
 
-_DATA_DIR = Path(__file__).parent.parent / "data"
-
-# This script runs a local application of wordle that can be played repeatedly. 
 
 class App(tk.Canvas):
     def __init__(self, root, **kwargs):
@@ -24,33 +31,41 @@ class App(tk.Canvas):
         self.stats = {0:0, 1:0 , 2:0, 3:0, 4:0, 5:0, 6:0}
     
     def startWordle(self, usedWords = []):
-        self.wordle = Wordle(usedWords=usedWords)
+        self.wordle = Wordle(DATA=DATA, usedWords=usedWords)
         print(self.wordle.theWord)
 
     def setup(self):
-        self.createTitle()
         self.createTiles()
-        self.letterBank = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+        self.letterBank = ALPHABET["letters"]
         self.createLetters()
 
-    def createTitle(self):
-        self.title = tk.Text(self.root, height=0, width=6)
-        self.title.config(font=("Courier", 64))
-        self.title.grid(row=0, column=0, sticky=(tk.N))
-        self.title.insert(tk.INSERT, "WORDLE")
-
     def createTiles(self):
-        for row in range(6):
-            for col in range(5):
-                self.gridRectangles[row].append(self.create_rectangle(160 + 100*col,80 + 100*row, 
-                                                240 + 100*col,160 + 100*row, outline="black"))
-                self.gridLetters[row].append(self.create_text(200 + 100*col,120 + 100*row,  text="", font=("Courier", 64)))
+        x0, y0, step, size = TILE["x_offset"], TILE["y_offset"], TILE["step"], TILE["size"]
+        for row in range(TILE["rows"]):
+            for col in range(TILE["cols"]):
+                self.gridRectangles[row].append(self.create_rectangle(
+                    x0 + step*col, y0 + step*row,
+                    x0 + step*col + size, y0 + step*row + size,
+                    outline=TILE["outline"],
+                ))
+                self.gridLetters[row].append(self.create_text(
+                    x0 + step*col + size//2, y0 + step*row + size//2,
+                    text="", font=TILE["font"],
+                ))
     
     def createLetters(self):
-        for row in [0,1]:
+        x0, y0, ts = ALPHABET["x_offset"], ALPHABET["y_offset"], ALPHABET["tile_size"]
+        for row in [0, 1]:
             for col in range(13):
-                self.gridAlphabetBackground.append(self.create_rectangle(75 + 50*col, 675 + 50*row, 125 + 50*col, 725 + 50*row, outline="white"))
-                self.gridAlphabet.append(self.create_text(100 + 50*col, 700 + 50*row, text=self.letterBank[row*13 + col], font=("Courier", 16)))
+                self.gridAlphabetBackground.append(self.create_rectangle(
+                    x0 + ts*col, y0 + ts*row,
+                    x0 + ts*col + ts, y0 + ts*row + ts,
+                    outline=ALPHABET["outline"],
+                ))
+                self.gridAlphabet.append(self.create_text(
+                    x0 + ts*col + ts//2, y0 + ts*row + ts//2,
+                    text=self.letterBank[row*13 + col], font=ALPHABET["font"],
+                ))
 
     def clearTiles(self):
         for row in range(6):
@@ -86,23 +101,15 @@ class App(tk.Canvas):
             self.itemconfig(self.gridLetters[self.row][self.col], text="")
 
     def updateRectangles(self, score):
-        for rect in range(5):
-            if score[rect][1] == 2:
-                self.itemconfigure(self.gridRectangles[self.row][rect], fill="green")
-            elif score[rect][1] == 1:
-                self.itemconfigure(self.gridRectangles[self.row][rect], fill="yellow")
-            else:
-                self.itemconfigure(self.gridRectangles[self.row][rect], fill="light grey")
+        for rect in range(TILE["cols"]):
+            fill = SCORE_COLORS.get(score[rect][1], SCORE_COLORS[0])
+            self.itemconfigure(self.gridRectangles[self.row][rect], fill=fill)
     
     def updateAlphabet(self):
         for i in range(26):
             color = self.wordle.wordBank.get(self.letterBank[i].lower())
-            if color == 2:
-                self.itemconfig(self.gridAlphabetBackground[i], fill="green")
-            elif color == 1:
-                self.itemconfig(self.gridAlphabetBackground[i], fill="yellow")
-            elif color == 0:
-                self.itemconfig(self.gridAlphabetBackground[i], fill="light grey")
+            if color in SCORE_COLORS:
+                self.itemconfig(self.gridAlphabetBackground[i], fill=SCORE_COLORS[color])
     
     def clearBoard(self):
         if len(self.winnerBanner) == 2:
@@ -134,24 +141,40 @@ class App(tk.Canvas):
         self.updateAlphabet()
 
     def badWord(self):
-        for i in range(5):
+        x0, y0, step, size = TILE["x_offset"], TILE["y_offset"], TILE["step"], TILE["size"]
+        for i in range(TILE["cols"]):
             self.delete(self.gridLetters[self.row][i])
-            self.gridLetters[self.row][i] = self.create_text(200 + 100*i,120 + 100*self.row,  text=self.guessWord[i].upper(), font=("Courier", 64), fill="red")
+            self.gridLetters[self.row][i] = self.create_text(
+                x0 + step*i + size//2, y0 + step*self.row + size//2,
+                text=self.guessWord[i].upper(), font=TILE["font"], fill=TILE["invalid_color"],
+            )
 
     def undoBadWord(self):
-        for i in range(5):
+        x0, y0, step, size = TILE["x_offset"], TILE["y_offset"], TILE["step"], TILE["size"]
+        for i in range(TILE["cols"]):
             self.delete(self.gridLetters[self.row][i])
-            self.gridLetters[self.row][i] = self.create_text(200 + 100*i,120 + 100*self.row,  text=self.guessWord[i].upper(), font=("Courier", 64))
+            self.gridLetters[self.row][i] = self.create_text(
+                x0 + step*i + size//2, y0 + step*self.row + size//2,
+                text=self.guessWord[i].upper(), font=TILE["font"],
+            )
 
     def winnerText(self):
-        possiblePhrases = np.loadtxt("/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/winning_messages.csv", dtype=str)
+        possiblePhrases = np.array(END_BANNER["text"])
         phrase = np.random.choice(possiblePhrases, 1)[0]
-        self.winnerBanner.append(self.create_rectangle(75, 675, 725, 775, fill="black"))
-        self.winnerBanner.append(self.create_text(400, 725, text=phrase, fill="white", font=("Courier", 64)))
+        self.winnerBanner.append(self.create_rectangle(
+            END_BANNER["x0"], END_BANNER["y0"], END_BANNER["x1"], END_BANNER["y1"], fill=END_BANNER["fill"],
+        ))
+        self.winnerBanner.append(self.create_text(
+            END_BANNER["cx"], END_BANNER["cy"], text=phrase, fill=END_BANNER["text_color"], font=END_BANNER["font"],
+        ))
 
     def lostGame(self):
-        self.loserBanner.append(self.create_rectangle(75, 675, 725, 775, fill="black"))
-        self.loserBanner.append(self.create_text(400, 725, text=self.wordle.theWord.upper(), fill="white", font=("Courier", 64)))
+        self.loserBanner.append(self.create_rectangle(
+            END_BANNER["x0"], END_BANNER["y0"], END_BANNER["x1"], END_BANNER["y1"], fill=END_BANNER["fill"],
+        ))
+        self.loserBanner.append(self.create_text(
+            END_BANNER["cx"], END_BANNER["cy"], text=self.wordle.theWord.upper(), fill=END_BANNER["text_color"], font=END_BANNER["font"],
+        ))
         self.statistics()
         self.wordle.finished = True
 
@@ -199,13 +222,21 @@ class App(tk.Canvas):
 
 
 root = tk.Tk()
-root.geometry("800x800")
-root.title("Wordle")
-root.grid_rowconfigure(0, weight=1)
+root.geometry(WINDOW["geometry"])
+root.title(WINDOW["title"])
+# Toolbar - fixed height.
+root.grid_rowconfigure(0, weight=0)
+# Canvas  — fills remaining space.
+root.grid_rowconfigure(1, weight=1)
 root.grid_columnconfigure(0, weight=1)
 
-app = App(root, width=800, height=800)
-app.grid(sticky=(tk.N, tk.S, tk.E, tk.W))
+toolbar = Toolbar(root, app=None)
+toolbar.register(HowToButton)
+
+app = App(root, width=CANVAS["width"], height=CANVAS["height"], )
+app.grid(row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
+# Give toolbar buttons access to the game after app exists.
+toolbar.app = app  
 app.setup()
 app.startWordle()
 
