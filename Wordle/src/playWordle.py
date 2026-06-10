@@ -1,7 +1,8 @@
 import tkinter as tk
 from wordle import Wordle
+from util import Statistics
 from toolbar import Toolbar
-from buttons import HowToButton
+from buttons import HowToButton, StatisticsButton
 from conf import (
     WINDOW, 
     CANVAS, 
@@ -28,11 +29,11 @@ class App(tk.Canvas):
         self.loserBanner = []
         self.usedWords = []
         self.guessWord = None
-        self.stats = {0:0, 1:0 , 2:0, 3:0, 4:0, 5:0, 6:0}
+        self.stats = Statistics()
     
     def startWordle(self, usedWords = []):
         self.wordle = Wordle(DATA=DATA, usedWords=usedWords)
-        print(self.wordle.theWord)
+        print(self.wordle.theWord, end='\n')
 
     def setup(self):
         self.createTiles()
@@ -44,13 +45,17 @@ class App(tk.Canvas):
         for row in range(TILE["rows"]):
             for col in range(TILE["cols"]):
                 self.gridRectangles[row].append(self.create_rectangle(
-                    x0 + step*col, y0 + step*row,
-                    x0 + step*col + size, y0 + step*row + size,
+                    x0 + step*col,
+                    y0 + step*row,
+                    x0 + step*col + size,
+                    y0 + step*row + size,
                     outline=TILE["outline"],
                 ))
                 self.gridLetters[row].append(self.create_text(
-                    x0 + step*col + size//2, y0 + step*row + size//2,
-                    text="", font=TILE["font"],
+                    x0 + step*col + size//2,
+                    y0 + step*row + size//2,
+                    text="",
+                    font=TILE["font"],
                 ))
     
     def createLetters(self):
@@ -58,13 +63,17 @@ class App(tk.Canvas):
         for row in [0, 1]:
             for col in range(13):
                 self.gridAlphabetBackground.append(self.create_rectangle(
-                    x0 + ts*col, y0 + ts*row,
-                    x0 + ts*col + ts, y0 + ts*row + ts,
+                    x0 + ts*col,
+                    y0 + ts*row,
+                    x0 + ts*col + ts,
+                    y0 + ts*row + ts,
                     outline=ALPHABET["outline"],
                 ))
                 self.gridAlphabet.append(self.create_text(
-                    x0 + ts*col + ts//2, y0 + ts*row + ts//2,
-                    text=self.letterBank[row*13 + col], font=ALPHABET["font"],
+                    x0 + ts*col + ts//2,
+                    y0 + ts*row + ts//2,
+                    text=self.letterBank[row*13 + col],
+                    font=ALPHABET["font"],
                 ))
 
     def clearTiles(self):
@@ -93,7 +102,7 @@ class App(tk.Canvas):
             self.itemconfigure(self.gridLetters[self.row][self.col], text=letter)
             self.col += 1
     
-    def deleteLetter(self, event):
+    def deleteLetter(self):
         if self.col == 5:
             self.undoBadWord()
         if self.col > 0:
@@ -145,8 +154,11 @@ class App(tk.Canvas):
         for i in range(TILE["cols"]):
             self.delete(self.gridLetters[self.row][i])
             self.gridLetters[self.row][i] = self.create_text(
-                x0 + step*i + size//2, y0 + step*self.row + size//2,
-                text=self.guessWord[i].upper(), font=TILE["font"], fill=TILE["invalid_color"],
+                x0 + step*i + size//2,
+                y0 + step*self.row + size//2,
+                text=self.guessWord[i].upper(),
+                font=TILE["font"],
+                fill=TILE["invalid_color"],
             )
 
     def undoBadWord(self):
@@ -154,8 +166,10 @@ class App(tk.Canvas):
         for i in range(TILE["cols"]):
             self.delete(self.gridLetters[self.row][i])
             self.gridLetters[self.row][i] = self.create_text(
-                x0 + step*i + size//2, y0 + step*self.row + size//2,
-                text=self.guessWord[i].upper(), font=TILE["font"],
+                x0 + step*i + size//2,
+                y0 + step*self.row + size//2,
+                text=self.guessWord[i].upper(),
+                font=TILE["font"],
             )
 
     def winnerText(self):
@@ -175,7 +189,7 @@ class App(tk.Canvas):
         self.loserBanner.append(self.create_text(
             END_BANNER["cx"], END_BANNER["cy"], text=self.wordle.theWord.upper(), fill=END_BANNER["text_color"], font=END_BANNER["font"],
         ))
-        self.statistics()
+        self.stats.recordLoss()
         self.wordle.finished = True
 
     def createWord(self):
@@ -193,26 +207,13 @@ class App(tk.Canvas):
                 self.guessMade()
                 if self.wordle.userWord == self.wordle.theWord:
                     self.winnerText()
-                    self.statistics()
+                    self.stats.recordWin(self.row + 1)
                     self.wordle.finished = True
                 elif self.row == 5:
                     self.lostGame()
                 else:
                     self.col = 0
                     self.row += 1
-
-    def statistics(self):
-        print(self.wordle.userWord)
-        print(self.wordle.theWord)
-        if self.wordle.userWord == self.wordle.theWord:
-            self.stats[self.row + 1] += 1
-        else:
-            self.stats[0] += 1
-        print()
-        for count in self.stats.keys():
-            print("{} : {}".format(count, self.stats.get(count)))
-        print()
-
 
     def restartGame(self, event):
         if self.wordle.finished:
@@ -232,6 +233,7 @@ root.grid_columnconfigure(0, weight=1)
 
 toolbar = Toolbar(root, app=None)
 toolbar.register(HowToButton)
+toolbar.register(StatisticsButton)
 
 app = App(root, width=CANVAS["width"], height=CANVAS["height"], )
 app.grid(row=1, sticky=(tk.N, tk.S, tk.E, tk.W))
@@ -242,7 +244,7 @@ app.startWordle()
 
 root.bind("<Key>", app.letterTyped)
 root.bind("<BackSpace>", app.deleteLetter)
-root.bind("<Return>", app.enterWord)
+root.bind("<Return>", lambda e: (app.restartGame(e), app.enterWord(e)))
 root.bind("<Button>", app.restartGame)
 
 root.mainloop()
