@@ -1,12 +1,14 @@
 import numpy as np
 from pathlib import Path
 
+import scoring
+
 class Wordle:
     def __init__(self, DATA, wordFileName=None, usedWords=[]):
         if wordFileName is None:
             wordFileName = DATA["guesses"]
-        self.allWords = np.loadtxt(wordFileName, dtype=str)
-        self.possibleAnswers = np.loadtxt(DATA["answers"], dtype=str)
+        self.allWords = scoring.load_words(wordFileName)
+        self.possibleAnswers = scoring.load_words(DATA["answers"])
         self.turn = 0
         self.finished = False
         self.wordBank = {"a":-1, "b":-1, "c":-1, "d":-1, "e":-1, "f":-1, "g":-1, "h":-1, "i":-1, "j":-1, "k":-1, "l":-1, "m":-1, "n":-1, "o":-1, "p":-1, "q":-1, "r":-1, "s":-1, "t":-1, "u":-1, "v":-1, "w":-1, "x":-1, "y":-1, "z":-1}
@@ -45,26 +47,9 @@ class Wordle:
         return np.isin(userWord, self.allWords)
 
 
-    ## Iterate Through it all once
-    ## Pick out the greens and then go through the yellows
     def evaluateGuess(self):
-        score = [[letter, 0] for letter in self.userWord]
-        tempWord = self.theWord
-        tempUserWord = self.userWord
-        for index in range(len(self.userWord)):
-            if tempUserWord[index] == self.theWord[index]:
-                score[index][1] = 2
-                tempWord = tempWord.replace(score[index][0], "_", 1)
-                tempUserWord = tempUserWord.replace(score[index][0], "_", 1)
-        for index in range(len(tempUserWord)):
-                if tempUserWord[index] != "_" and tempUserWord[index] in tempWord:
-                    score[index][1] = max(1, score[index][1])
-                    tempWord = tempWord.replace(score[index][0], "_", 1)
-                    tempUserWord = tempUserWord.replace(score[index][0], "_", 1)
-        for index in range(len(tempUserWord)):
-            if tempUserWord[index] != "_":
-                score[index][1] = max(0, score[index][1])
-        return score
+        # Shared scoring rule — see scoring.py (same rule the solver reasons with).
+        return scoring.evaluateGuess(self.userWord, self.theWord)
 
     def printCorrectLetters(self):
         correctLetters = self.findCorrectLetters()

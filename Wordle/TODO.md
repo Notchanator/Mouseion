@@ -1,18 +1,18 @@
 # Wordle — To Do
 
 ### Bugs
-- [ ] **`solveWordle.py` — `turn` increments crash on init** (`wordle.py:38`): `for word in usedWords: turn += 1` references the class-level `turn` without `self.`, causing an `UnboundLocalError` at runtime when `usedWords` is non-empty
-- [ ] **`solveWordle.py` — mutable default arguments** (`wordle.py:34`): `def __init__(self, usedWords=[], usedWordsScore=[])` uses mutable defaults — list state persists across instantiations; replace with `None` and assign inside the method
-- [ ] **`solveWordle.py` — `wordBank` is a class-level attribute** (`wordle.py:32`): defined on the class, not per-instance, so all `Wordle` instances share the same word bank dict and mutations to one affect all others
-- [ ] **`solveWordle.py` — score instructions print on wrong guess** (`solveWordle.py:90`): `if guess == 1` should be `if guess == 0` — the scoring format instructions only print before the second guess input, not the first
-- [ ] **`solveWordle.py` — absolute hardcoded paths** (`solveWordle.py:29-30`): data files are loaded with hardcoded absolute paths (e.g. `/Users/notchjohnson/...`), unlike `wordle.py` and `playWordle.py` which use `pathlib`; update to use `_DATA_DIR`
+- [x] **`solveWordle.py` — `turn` increments crash on init**: resolved by the `WordleSolver` rewrite — the duplicate `Wordle` class is gone
+- [x] **`solveWordle.py` — mutable default arguments**: resolved — `WordleSolver.__init__` takes no list defaults
+- [x] **`solveWordle.py` — `wordBank` is a class-level attribute**: resolved — the solver no longer uses `wordBank` (a game/keyboard concern); state is per-instance `candidates`
+- [x] **`solveWordle.py` — score instructions print on wrong guess**: resolved — the CLI loop now prints the score format once up front
+- [x] **`solveWordle.py` — absolute hardcoded paths**: resolved — loads via `conf.DATA` / `scoring.load_words`
 - [x] **`wordle.py` — program body runs on import** (`wordle.py:94-98`): the `while True` game loop at the bottom of `wordle.py` executes when the module is imported by `playWordle.py`; should be guarded with `if __name__ == "__main__":`
 
 ### Refactoring
-- [ ] **Merge duplicate `Wordle` classes** — `solveWordle.py` defines its own `Wordle` class that duplicates `wordle.py`; refactor `solveWordle.py` to import and extend the shared class
-- [ ] **`solveWordle.py` — `subsetAllWords` is a no-op** (`solveWordle.py:48-62`): all three branches (`grey`, `yellow`, `green`) are `pass` — the core filtering logic still needs to be implemented
-- [ ] **`solveWordle.py` — `suggestWord` is a stub** (`solveWordle.py:73-75`): always returns `"Apple"`; needs entropy-based implementation modelled on the notebook's `wordleBot`
-- [ ] **`solveWordle.py` — `createAnswersDF` is a stub** (`solveWordle.py:41-44`): returns a bare `pd.DataFrame(numpyList)` with no column splitting per letter position
+- [x] **Merge duplicate `Wordle` classes** — resolved via `scoring.py`: the scoring rule + word loading now live in one stateless kernel that both `wordle.py` (host) and `solveWordle.py` (`WordleSolver`) import. See `docs/Solver-Architecture-Design.md`
+- [x] **`solveWordle.py` — `subsetAllWords` is a no-op**: resolved — replaced by `WordleSolver.record`, which subsets candidates by reported score using the shared `evaluateGuess`
+- [x] **`solveWordle.py` — `suggestWord` is a stub**: resolved — `WordleSolver.suggest` returns the `soare` opener then live highest-entropy survivors
+- [x] **`solveWordle.py` — `createAnswersDF` is a stub**: resolved — removed; the cross-table-free `record`/`_entropy` design doesn't need it
 
 ### Tasks
 - [ ] **Improve Play Wordle UI**: Add ? to add rules and key binds. Add functionality for next game. Add functionality to give up.
