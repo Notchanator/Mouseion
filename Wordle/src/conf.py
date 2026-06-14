@@ -9,6 +9,13 @@ DATA = {
     "guesses": _DATA_DIR / "wordle_guesses.csv",
 }
 
+# Solver settings
+SOLVER = {
+    # Fixed opening guess — constant every game, so turn 1 never pays the
+    # full-dictionary entropy cost.
+    "opener": "soare",
+}
+
 
 # Window size
 WINDOW = {

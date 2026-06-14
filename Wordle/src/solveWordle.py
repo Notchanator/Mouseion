@@ -1,107 +1,90 @@
+"""Wordle solver — suggests guesses and narrows the answer from reported scores.
+
+Companion to the playable game. The player is the oracle: the solver proposes a
+word, the player reports the real game's evaluation as a 5-char code string
+(0 = grey, 1 = yellow, 2 = green, e.g. "10221"), and the solver discards every
+candidate answer that could not have produced that report.
+
+The expensive first turn is skipped by hard-coding the opener (conf.SOLVER), so
+entropy is only ever computed over the surviving candidate set — never the full
+dictionary.
+
+    1. Suggest a word (opener on turn 1, else the highest-entropy survivor).
+    2. Read the reported score.
+    3. Subset candidates to those consistent with that score.
+    4. Repeat until one candidate remains (or the player reports a win).
+"""
+
 import numpy as np
-import pandas as pd
-import sys
-from pathlib import Path
 
-# This script is meant as an aide to the actual Wordle application. Start without any guesses
-# and it will recommend a starting word then input the results to find the final word.
-
-# Inputs: "apple" "10021" | "a" and "e" are yellow, "l" is green
-
-"""
-Workflow:
-1. Prompt for # of current guesses
-    a. Prompt for word
-    b. Prompt for scoring
-    c. Repeat for all guesses
-2. Run Wordle w/ Used Words
-3. Call functions to score and subset possible answers.
-4. Output suggestion with highest entropy
-5. Prompt for scoring or success
-6. Repeat steps 3, 4, and 5.
-"""
-
-## For now let's define a new Wordle Class since we need to utilize it differently.
-# TODO: Refactor the wordle classes into one.
-
-class Wordle:
-      
-    possibleAnswers = np.loadtxt("/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/wordle_answers.csv", dtype=str)
-    allWords = np.loadtxt("/Users/notchjohnson/Mouseion/Mouseion/Wordle/data/wordle_guesses.csv", dtype=str)
-    turn = 0
-    wordBank = {"a":-1, "b":-1, "c":-1, "d":-1, "e":-1, "f":-1, "g":-1, "h":-1, "i":-1, "j":-1, "k":-1, "l":-1, "m":-1, "n":-1, "o":-1, "p":-1, "q":-1, "r":-1, "s":-1, "t":-1, "u":-1, "v":-1, "w":-1, "x":-1, "y":-1, "z":-1}
-
-    def __init__(self, usedWords=[], usedWordsScore=[]):
-        self.usedWords = usedWords
-        self.usedWordsScore = usedWordsScore
-        for word in usedWords:
-            turn += 1
-            # TODO: Confirm that this logic works for an empty list.
-
-    def createAnswersDF(self, numpyList):
-        # TODO: Create this function. It should make each value in the numpy list a new row. Each
-        # column will represent a letter of the word. 
-        return pd.DataFrame(numpyList)
+import scoring
+from conf import DATA, SOLVER
 
 
-    # To subset all answers & guesses by current scores.
-    def subsetAllWords(self, usedWord, usedWordScore):
-        # TODO an excpetion for duplicate letters in the word. 
-        for index in range(len(usedWord)):
-            # If Grey remove all words that contain any of that letter.
-            if usedWordScore[index] == '0':
-                pass
-            # If Yellow remove all words 
-            elif usedWordScore[index] == '1':
-                pass
-            # If Green.
-            elif usedWordScore[index] == '2':
-                pass
-            else:
-                print(usedWordScore[index])
-                raise Exception(f"Invalid Score for {usedWord}")
+class WordleSolver:
+    def __init__(self):
+        self.candidates = scoring.load_words(DATA["answers"])
+        self.turn = 0
 
-            
-    def subsetUsedWords(self):
-        for index, word in enumerate(self.usedWords):
-            self.subsetAllWords(word, self.usedWordsScore[index])
+    @property
+    def solved(self):
+        return len(self.candidates) == 1
 
-    def subsetNewWord(self, word, wordScore):
-        self.subsetAllWords(word, wordScore)
+    def suggest(self):
+        """Next word to guess: the fixed opener on turn 0, else the survivor that
+        most evenly splits the remaining candidates (highest entropy)."""
+        if self.turn == 0:
+            return SOLVER["opener"]
+        return max(self.candidates, key=self._entropy)
+
+    def record(self, guess, code):
+        """Keep only candidates whose score against ``guess`` matches the reported
+        ``code``, then advance the turn."""
+        self.candidates = np.array([
+            answer for answer in self.candidates
+            if scoring.encode(scoring.evaluateGuess(guess, answer)) == code
+        ])
         self.turn += 1
 
-    def suggestWord(self):
-        # TODO: Create this function. This can closely model the WordleBot in the notebook.
-        return "Apple"
-
-    
-
-
-# Prompt # of current guesses.
-guessCount = input("Number of guesses already done:")
-try:
-    guessCount = int(guessCount)
-except:
-    raise TypeError
-usedWords = []
-usedWordsScore = []
-for guess in range(0, guessCount):
-    usedWords.append(input("Guess:").lower())
-    if guess == 1 :
-        print("Input Scores like 01021. Where 1 represents Yellow and 2 represents Green.")
-    usedWordsScore.append(input("Score:"))
-wordle = Wordle(usedWords=usedWords)
-wordle.subsetUsedWords()
-solved = False
-while not solved:
-    suggestedWord = wordle.suggestWord()
-    print(f"Suggested Word: {suggestedWord}")
-    score = input("How did that word score. If it was the word type 'Done'")
-    if score == 'Done':
-        solved = True
-    else:
-        wordle.subsetNewWord(suggestedWord, score)
+    def _entropy(self, guess):
+        """Expected information (bits) from guessing ``guess`` against the current
+        candidates: partition them by the score they'd yield, then H = -Σ pᵢ·log₂ pᵢ."""
+        partitions = {}
+        for answer in self.candidates:
+            code = scoring.encode(scoring.evaluateGuess(guess, answer))
+            partitions[code] = partitions.get(code, 0) + 1
+        probs = np.array(list(partitions.values())) / len(self.candidates)
+        return float(-(probs * np.log2(probs)).sum())
 
 
+def main():
+    solver = WordleSolver()
+    print("Wordle solver — report each guess's score as a 5-char code:")
+    print("  0 = grey, 1 = yellow, 2 = green   (e.g. 10221)")
+    print("  Type 'done' if the suggested word was the answer.\n")
+
+    while True:
+        guess = solver.suggest()
+        print(f"Turn {solver.turn + 1}: guess  ->  {guess}")
+        code = input("Score (or 'done'): ").strip().lower()
+
+        if code == "done":
+            print(f"\nSolved: {guess}")
+            return
+        if len(code) != 5 or any(c not in "012" for c in code):
+            print("  Invalid score — use 5 characters, each 0/1/2.\n")
+            continue
+
+        solver.record(guess, code)
+
+        if solver.solved:
+            print(f"\nThe word is: {solver.candidates[0]}")
+            return
+        if len(solver.candidates) == 0:
+            print("\nNo candidates remain — double-check the reported scores.")
+            return
+        print(f"  {len(solver.candidates)} candidates remain.\n")
 
 
+if __name__ == "__main__":
+    main()
