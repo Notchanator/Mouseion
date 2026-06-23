@@ -1,13 +1,9 @@
-import tkinter as tk
+import tkinter as tk 
 
 
 class BaseDialog(tk.Toplevel):
     """
     Base class for all toolbar dialogs.
-
-    Opens as a modal window (blocks interaction with the main window until
-    closed). Subclasses must implement build(), which populates the dialog
-    with content.
     """
     def __init__(self, root, title):
         super().__init__(root)
@@ -18,10 +14,15 @@ class BaseDialog(tk.Toplevel):
         self._center()
 
     def build(self):
+        """
+        MUST be imprmented for subclasses.
+        """
         raise NotImplementedError("Dialogs must implement build()")
 
     def _center(self):
-        """Position the dialog in the centre of the screen."""
+        """
+        Position the dialog in the centre of the screen.
+        """
         self.update_idletasks()
         w = self.winfo_width()
         h = self.winfo_height()
@@ -82,7 +83,9 @@ class HowToDialog(BaseDialog):
         ).pack(pady=(20, 0))
 
     def _build_colour_examples(self, parent):
-        """Render three coloured tile examples illustrating green/yellow/grey."""
+        """
+        Render three coloured tile examples illustrating green/yellow/grey.
+        """
         examples = [
             ("W", "green",      "Correct letter, correct spot"),
             ("O", "yellow",     "Correct letter, wrong spot"),
@@ -106,9 +109,7 @@ class HowToDialog(BaseDialog):
 
 class StatisticsDialog(BaseDialog):
     """
-    Displays the running game statistics: summary tallies plus a labelled
-    bar chart of the guess distribution. Receives a Statistics object and
-    only reads from it — never mutates game state.
+    Displays the running game statistics.
     """
     _BAR_COLOR = "#333333"
     _MAX_WIDTH = 200
@@ -137,11 +138,13 @@ class StatisticsDialog(BaseDialog):
         ).pack(pady=(20, 0))
 
     def _build_summary(self, parent):
-        """Render the played / win% / lost summary across a row."""
+        """
+        Render the played/win/lost summary.
+        """
         summary = [
-            ("Played", self._stats.gamesPlayed),
-            ("Win %",  self._stats.winPercentage),
-            ("Lost",   self._stats.gamesLost),
+            ("Played", self._stats.gamesPlayed()),
+            ("Win %",  self._stats.winPercentage()),
+            ("Lost",   self._stats.gamesLost()),
         ]
         row = tk.Frame(parent)
         row.pack()
@@ -152,8 +155,10 @@ class StatisticsDialog(BaseDialog):
             tk.Label(cell, text=label, font=("Courier", 10), fg="#555555").pack()
 
     def _build_distribution(self, parent):
-        """Render one labelled bar per guess count (1-6)."""
-        distribution = self._stats.guessDistribution
+        """
+        Render one labelled bar per guess count.
+        """
+        distribution = self._stats.guessDistribution()
         max_val = max(distribution.values()) if any(distribution.values()) else 1
 
         for guesses, count in distribution.items():

@@ -1,7 +1,14 @@
-import numpy as np
-from pathlib import Path
-
 import scoring
+from conf import DATA
+
+
+import numpy as np
+
+"""
+This file is a script for a CLI interfact to the game.
+
+Houses the Wordle game logic for the GUI game in playWordle.
+"""
 
 class Wordle:
     def __init__(self, DATA, wordFileName=None, usedWords=[]):
@@ -75,7 +82,7 @@ class Wordle:
 
 
 def programBody(usedWords):
-    wordle = Wordle(usedWords=usedWords)
+    wordle = Wordle(DATA, usedWords=usedWords)
     return(wordle.playGame())
 
 

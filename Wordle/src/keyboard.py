@@ -4,10 +4,6 @@ from conf import ALPHABET, SCORE_COLORS
 class Keyboard:
     """
     The on-screen alphabet keyboard drawn at the bottom of the board.
-
-    Owns the two-row grid of letter tiles and knows how to draw itself,
-    clear itself, and recolour each letter to reflect the current word
-    bank state. Renders onto a Tkinter canvas passed in at construction.
     """
     _ROWS = [0, 1]
     _COLS = 13
@@ -45,7 +41,9 @@ class Keyboard:
         self.labels = []
 
     def update(self, wordBank):
-        """Recolour each letter tile to match its status in the word bank."""
+        """
+        Recolour each letter tile to match its status.
+        """
         for i in range(len(self.letters)):
             color = wordBank.get(self.letters[i].lower())
             if color in SCORE_COLORS:

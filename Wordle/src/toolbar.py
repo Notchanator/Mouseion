@@ -16,11 +16,8 @@ class ToolbarButton:
 
     @property
     def app(self):
-        """Live reference to the game App, read through the toolbar.
-
-        The toolbar owns the App reference and may have it assigned after
-        buttons are registered, so buttons must read it lazily rather than
-        capturing it at construction time.
+        """
+        Live reference to the game App, read through the toolbar.
         """
         return self.toolbar.app
 
@@ -34,9 +31,7 @@ class ToolbarButton:
 class Toolbar:
     """
     Horizontal toolbar frame that sits above the game canvas.
-
-    Buttons are added via register(), which instantiates the given
-    ToolbarButton subclass and appends it to the internal button list.
+    Buttons are added via register().
     """
     def __init__(self, root, app):
         self.root = root
@@ -54,7 +49,9 @@ class Toolbar:
         self.title.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     def register(self, button_class):
-        """Instantiate a ToolbarButton subclass and add it to the toolbar."""
+        """
+        Instantiate a ToolbarButton subclass and add it to the toolbar.
+        """
         button = button_class(self)
         self.buttons.append(button)
         return button
