@@ -3,6 +3,11 @@ from lxml import html
 import numpy as np
 import pandas as pd
 
+"""
+This code is not production. 
+This was code ran once that scraped a forum page for all world allowed guesses and potential answers.
+"""
+
 def wordScrape():
     url = "https://eslforums.com/5-letter-words/"
     headers = {"User-Agent" : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36'}

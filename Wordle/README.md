@@ -31,15 +31,24 @@ Wordle/
 
 ## Running Locally
 
-Dependencies: `numpy`, `pandas`, `tkinter` (stdlib)
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) via `pyproject.toml`.
 
 ```bash
-# Playable GUI game
-python Wordle/src/playWordle.py
+# One-time: install uv — https://docs.astral.sh/uv/getting-started/installation/
+brew install uv
 
-# CLI solver assistant
-python Wordle/src/solveWordle.py
+# From the Wordle/ directory — creates .venv and installs the locked deps
+cd Wordle
+uv sync                 # runtime deps only
+uv sync --all-groups    # also installs the Jupyter dev tooling
+
+# Run anything in the managed environment with `uv run` (no manual activation)
+uv run python src/playWordle.py   # playable GUI game
+uv run python src/solveWordle.py  # CLI solver assistant
+uv run jupyter lab                # data-analysis notebook
 ```
+
+`uv run` resolves and uses the project's `.venv` automatically, so there's no `source .venv/bin/activate` step. Commit `pyproject.toml`, `uv.lock`, and `.python-version`; `.venv/` is gitignored.
 
 ---
 

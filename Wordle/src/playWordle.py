@@ -1,4 +1,3 @@
-import tkinter as tk
 from wordle import Wordle
 from util import Statistics
 from keyboard import Keyboard
@@ -12,7 +11,15 @@ from conf import (
     END_BANNER,
     DATA
 )
+
 import numpy as np
+import tkinter as tk
+
+"""
+Runable Script to Play Wordle.
+
+Houses Main Class for the GUI of the Wordle Game
+"""
 
 
 class App(tk.Canvas):
@@ -39,6 +46,9 @@ class App(tk.Canvas):
         self.keyboard.draw()
 
     def createTiles(self):
+        """
+        Creates the tile spaces where all of the guesses are shown.
+        """
         x0, y0, step, size = TILE["x_offset"], TILE["y_offset"], TILE["step"], TILE["size"]
         for row in range(TILE["rows"]):
             for col in range(TILE["cols"]):
@@ -63,6 +73,9 @@ class App(tk.Canvas):
                 self.delete(self.gridLetters[row][col])
 
     def letterTyped(self, event):
+        """
+        When a letter is typed place it the correct tile. If all tiles are full test the word.
+        """
         letter = event.char.upper()
         if letter in self.keyboard.letters:
             self.writeLetter(letter)
@@ -84,6 +97,9 @@ class App(tk.Canvas):
             self.itemconfig(self.gridLetters[self.row][self.col], text="")
 
     def updateRectangles(self, score):
+        """
+        Update the tile spaces that contain letters to reflect the correct colors post scoring.
+        """
         for rect in range(TILE["cols"]):
             fill = SCORE_COLORS.get(score[rect][1], SCORE_COLORS[0])
             self.itemconfigure(self.gridRectangles[self.row][rect], fill=fill)
@@ -116,7 +132,9 @@ class App(tk.Canvas):
         self.keyboard.update(self.wordle.wordBank)
 
     def redrawCurrentRow(self, fill="black"):
-        """Redraw the current row's letters, optionally tinted (e.g. red for an invalid word)."""
+        """
+        Redraw the current row's letters.
+        """
         x0, y0, step, size = TILE["x_offset"], TILE["y_offset"], TILE["step"], TILE["size"]
         for i in range(TILE["cols"]):
             self.delete(self.gridLetters[self.row][i])

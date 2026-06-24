@@ -11,8 +11,8 @@ DATA = {
 
 # Solver settings
 SOLVER = {
-    # Fixed opening guess — constant every game, so turn 1 never pays the
-    # full-dictionary entropy cost.
+    # Fixed opening guess that is constant every game.
+    # This speeds up turn 1 by not running full-dictionary entropy cost.
     "opener": "soare",
 }
 

@@ -25,7 +25,6 @@ A 2-player competitive puzzle game where 7 dice dictate obstacle placement on a 
 
 - **Stack:** Python, Pygame, Shapely
 - **Entry point:** `App/main.py`
-- **Run locally:** `source /Users/notchjohnson/Mouseion/Mouseion/GeniusStar/.venv/bin/activate`
 - **Active tasks:**
   - Draw picked-up pieces first (before others)
   - Detect when the board is successfully solved
@@ -85,8 +84,7 @@ Example: `GS-solver-refactor`, `W-entropy-fix`, `M-readme-update`
 
 ## Notes for Claude
 
-- Python projects use local virtual environments (`.venv/` or `venv/`) — activate before running
-- Java projects use IntelliJ IDEA (`.idea/`, `.iml` files present) — do not modify IDE config files
+- Setup and run instructions live in each project's own `CLAUDE.md` / `README.md` — that subdirectory is the source of truth for how to install deps and run the project.
+- Dependencies are managed per project with the language's native manifest + lockfile (Python → `pyproject.toml` + `uv.lock` via uv; R → `renv`; Java → Maven). See the root `README.md` for the convention.
 - Avoid committing `.DS_Store`, `__pycache__/`, `.RData`, `.httr-oauth`, or `.Rhistory` files (see `.gitignore`)
 - Each project is largely self-contained — changes in one project should not affect others
-- GeniusStar is the most actively developed project
