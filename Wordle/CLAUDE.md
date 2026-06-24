@@ -48,14 +48,15 @@ Wordle/
 
 ## Running Locally
 
-Data paths use `pathlib` relative to each script, so they can be run from any directory:
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) via `pyproject.toml` + `uv.lock`. 
+
+Use `uv run` from the `Wordle/` directory — no manual `.venv` activation. 
 
 ```bash
-python Wordle/src/playWordle.py   # GUI game
-python Wordle/src/solveWordle.py  # CLI solver
+uv sync --all-groups               # set up .venv from the lockfile (incl. Jupyter)
+uv run python src/playWordle.py    # GUI game
+uv run python src/solveWordle.py   # CLI solver
 ```
-
-Dependencies: `numpy`, `pandas`, `tkinter` (stdlib)
 
 ---
 
