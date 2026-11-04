@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MemoryNinja</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <h1 class="logo">Memory<span>Ninja</span></h1>
+      <button id="new-game" class="btn">New Game</button>
+    </header>
+
+    <section id="scoreboard" class="scoreboard">
+      <div class="player" data-player="0">
+        <input class="player-name" value="Player 1" maxlength="14" aria-label="Player 1 name" />
+        <div class="score" id="score-0">0</div>
+      </div>
+      <div class="turn-hint" id="turn-hint">Tap “New Game” to start</div>
+      <div class="player" data-player="1">
+        <input class="player-name" value="Player 2" maxlength="14" aria-label="Player 2 name" />
+        <div class="score" id="score-1">0</div>
+      </div>
+    </section>
+
+    <main id="board" class="board" aria-label="Game board"></main>
+  </div>
+
+  <div id="overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <h2 id="overlay-title">Game Over</h2>
+      <p id="overlay-detail"></p>
+      <button id="overlay-new" class="btn btn-primary">Play Again</button>
+    </div>
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

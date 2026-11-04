@@ -1,0 +1,20 @@
+[project]
+name = "memoryninja"
+version = "0.1.0"
+description = "A browser-based, mobile-friendly 1v1 memory card game"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27",
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

@@ -19,5 +19,6 @@ Each branch should be named with the following structure `{Project}-{Purpose}`; 
 - Mouseion : M
 - GeniusStar : GS
 - Wordle : W
+- MemoryNinja: MN
 
 
