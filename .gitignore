@@ -6,6 +6,9 @@ __pycache__/
 # Generated analysis outputs
 Wordle/outputs/
 
+# Downloaded data
+Border Analysis/data/
+
 # C extensions
 *.so
 
